@@ -29,10 +29,10 @@
         .functions-grid { display: flex; flex-direction: column; gap: 10px; }
         .func-btn { background: rgba(255,255,255,0.15); border: none; padding: 12px; border-radius: 30px; color: white; font-size: 16px; text-align: center; cursor: pointer; }
         .expandable-panel { display: none; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 15px; flex-wrap: wrap; gap: 10px; align-items: center; }
-        .expandable-panel.active { display: flex; }
+        .expandable-panel.active { display: flex; flex-direction: column; align-items: stretch; }
         .time-select, .datetime-input { background: rgba(255,255,255,0.2); border: none; padding: 10px; border-radius: 20px; color: white; flex: 1; }
         .action-btn { background: #0083b0; border: none; padding: 10px 15px; border-radius: 20px; color: white; cursor: pointer; }
-        .cancel-btn { background: #ff4b2b; margin-left: 10px; }
+        .cancel-btn { background: #ff4b2b; }
         .history-list { max-height: 150px; overflow-y: auto; font-size: 12px; font-family: monospace; }
         .history-item { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         #map-container { height: 250px; width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: #1e1e2e; }
@@ -40,13 +40,16 @@
         .connection-status { text-align: center; font-size: 12px; opacity: 0.7; margin-top: 10px; }
         .timer-display { font-size: 24px; font-weight: bold; text-align: center; font-family: monospace; margin-top: 10px; color: #00b4db; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: #1a1a2e; border-radius: 30px; padding: 20px; width: 80%; max-width: 300px; text-align: center; }
+        .modal-content { position: relative; background: #1a1a2e; border-radius: 30px; padding: 20px; width: 80%; max-width: 300px; text-align: center; }
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; background: none; border: none; color: white; }
+        .modal-title { margin-top: 10px; margin-bottom: 15px; }
         .flex-btns { display: flex; gap: 10px; }
         .schedule-item { background: rgba(0,0,0,0.5); border-radius: 15px; padding: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .schedule-time { font-family: monospace; }
         .schedule-cancel { background: #ff4b2b; border: none; padding: 5px 10px; border-radius: 20px; color: white; cursor: pointer; }
-        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; background: none; border: none; color: white; }
-        .modal-title { margin-bottom: 15px; }
+        .auto-temp-status { font-size: 12px; margin-top: 10px; text-align: center; }
+        .range-input { width: 100%; margin: 5px 0; }
+        .range-labels { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -90,6 +93,7 @@
                 <button class="func-btn" id="btnArmDisarm">🔒 ПОСТАВИТЬ НА ОХРАНУ</button>
                 <button class="func-btn" id="btnScheduleToggle">⏰ ЗАПУСК ПО ВРЕМЕНИ</button>
                 <button class="func-btn" id="btnWarmupToggle">🌡️ ПРОГРЕВ</button>
+                <button class="func-btn" id="btnAutoTempToggle">❄️ АВТОЗАПУСК ПО ТЕМПЕРАТУРЕ</button>
             </div>
             <div id="warmupPanel" class="expandable-panel">
                 <select id="warmupTime" class="time-select">
@@ -98,6 +102,23 @@
                     <option value="25">25 минут</option><option value="30">30 минут</option>
                 </select>
                 <button class="action-btn" id="btnStartWarmup">Запустить прогрев</button>
+            </div>
+            <div id="autoTempPanel" class="expandable-panel">
+                <div>
+                    <label>❄️ Температура запуска: <span id="tempThresholdValue">-25</span>°C</label>
+                    <input type="range" id="tempThreshold" class="range-input" min="-40" max="0" value="-25" step="1">
+                    <div class="range-labels"><span>-40°C</span><span>-25°C</span><span>0°C</span></div>
+                </div>
+                <div>
+                    <label>⏱️ Время прогрева: <span id="warmupDurationValue">20</span> минут</label>
+                    <input type="range" id="warmupDuration" class="range-input" min="5" max="60" value="20" step="5">
+                    <div class="range-labels"><span>5 мин</span><span>30 мин</span><span>60 мин</span></div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="action-btn" id="btnStartAutoTemp" style="flex: 1;">🔘 Включить</button>
+                    <button class="action-btn cancel-btn" id="btnStopAutoTemp" style="flex: 1;">⏹️ Отключить</button>
+                </div>
+                <div id="autoTempStatus" class="auto-temp-status">⚪ Автозапуск выключен</div>
             </div>
             <div id="scheduleList"></div>
         </div>
@@ -118,7 +139,7 @@
     <div class="modal-content">
         <button class="close-modal" id="closeModalBtn">✕</button>
         <h3 class="modal-title">Запланировать запуск</h3>
-        <input type="datetime-local" id="scheduleDateTime" class="datetime-input" style="width: 100%; margin: 10px 0;">
+        <input type="datetime-local" id="scheduleDateTime" class="datetime-input" style="width: 100%; margin: 15px 0;">
         <button id="confirmScheduleBtn" class="action-btn" style="width: 100%;">Запланировать</button>
     </div>
 </div>
@@ -130,33 +151,16 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="sw-register.js"></script>
 <script>
-    // === АНИМАЦИЯ КНОПОК (работает на iOS) ===
     function addButtonAnimation(btn) {
         if (!btn) return;
-        btn.addEventListener('touchstart', function() {
-            this.style.transform = 'scale(0.97)';
-            this.style.transition = 'transform 0.08s ease';
-        }, { passive: true });
-        btn.addEventListener('touchend', function() {
-            this.style.transform = 'scale(1)';
-        });
-        btn.addEventListener('touchcancel', function() {
-            this.style.transform = 'scale(1)';
-        });
-        btn.addEventListener('mousedown', function() {
-            this.style.transform = 'scale(0.97)';
-        });
-        btn.addEventListener('mouseup', function() {
-            this.style.transform = 'scale(1)';
-        });
-        btn.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
+        btn.addEventListener('touchstart', function() { this.style.transform = 'scale(0.97)'; this.style.transition = 'transform 0.08s ease'; }, { passive: true });
+        btn.addEventListener('touchend', function() { this.style.transform = 'scale(1)'; });
+        btn.addEventListener('touchcancel', function() { this.style.transform = 'scale(1)'; });
+        btn.addEventListener('mousedown', function() { this.style.transform = 'scale(0.97)'; });
+        btn.addEventListener('mouseup', function() { this.style.transform = 'scale(1)'; });
+        btn.addEventListener('mouseleave', function() { this.style.transform = 'scale(1)'; });
     }
-
-    // Применяем анимацию ко всем существующим кнопкам
     document.querySelectorAll('button').forEach(btn => addButtonAnimation(btn));
-
     let client = null;
     let map = null, marker = null;
     let historyCoords = [];
@@ -170,8 +174,12 @@
     let engineStartTime = null;
     let isWarmupMode = false;
     let warmupSeconds = 0;
+    
+    // Настройки автозапуска по температуре
+    let autoTempEnabled = false;
+    let autoTempThreshold = -25;
+    let autoTempDuration = 20;
 
-    // DOM элементы
     const mqttConfigPanel = document.getElementById('mqttConfigPanel');
     const mainInterface = document.getElementById('mainInterface');
     const saveMqttBtn = document.getElementById('saveMqttBtn');
@@ -186,9 +194,18 @@
     const btnArmDisarm = document.getElementById('btnArmDisarm');
     const btnWarmupToggle = document.getElementById('btnWarmupToggle');
     const btnScheduleToggle = document.getElementById('btnScheduleToggle');
+    const btnAutoTempToggle = document.getElementById('btnAutoTempToggle');
     const warmupPanel = document.getElementById('warmupPanel');
+    const autoTempPanel = document.getElementById('autoTempPanel');
     const btnStartWarmup = document.getElementById('btnStartWarmup');
     const warmupTime = document.getElementById('warmupTime');
+    const tempThreshold = document.getElementById('tempThreshold');
+    const tempThresholdValue = document.getElementById('tempThresholdValue');
+    const warmupDuration = document.getElementById('warmupDuration');
+    const warmupDurationValue = document.getElementById('warmupDurationValue');
+    const btnStartAutoTemp = document.getElementById('btnStartAutoTemp');
+    const btnStopAutoTemp = document.getElementById('btnStopAutoTemp');
+    const autoTempStatusDiv = document.getElementById('autoTempStatus');
     const scheduleList = document.getElementById('scheduleList');
     const btnClearHistory = document.getElementById('btnClearHistory');
     const carImage = document.getElementById('carImage');
@@ -203,11 +220,6 @@
     const confirmScheduleBtn = document.getElementById('confirmScheduleBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
-    // Анимация для динамических кнопок (будет вызываться при создании)
-    function animateDynamicButton(btn) {
-        addButtonAnimation(btn);
-    }
-
     function formatTime(seconds) {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
@@ -221,15 +233,10 @@
         isWarmupMode = isWarmup;
         warmupSeconds = warmupMin * 60;
         timerDisplay.style.display = 'block';
-        
         engineTimer = setInterval(() => {
-            if (!isEngineRunning) {
-                stopTimer();
-                return;
-            }
-            let elapsed;
+            if (!isEngineRunning) { stopTimer(); return; }
             if (isWarmupMode) {
-                elapsed = Math.floor((Date.now() - engineStartTime) / 1000);
+                const elapsed = Math.floor((Date.now() - engineStartTime) / 1000);
                 const remaining = Math.max(0, warmupSeconds - elapsed);
                 timerDisplay.textContent = `🌡️ ПРОГРЕВ: ${formatTime(remaining)}`;
                 if (remaining <= 0) {
@@ -238,17 +245,14 @@
                     showNotification('Прогрев завершён, двигатель заглушен');
                 }
             } else {
-                elapsed = Math.floor((Date.now() - engineStartTime) / 1000);
+                const elapsed = Math.floor((Date.now() - engineStartTime) / 1000);
                 timerDisplay.textContent = `⏱️ ВРЕМЯ РАБОТЫ: ${formatTime(elapsed)}`;
             }
         }, 1000);
     }
 
     function stopTimer() {
-        if (engineTimer) {
-            clearInterval(engineTimer);
-            engineTimer = null;
-        }
+        if (engineTimer) { clearInterval(engineTimer); engineTimer = null; }
         timerDisplay.style.display = 'none';
     }
 
@@ -261,14 +265,11 @@
         scheduledItems.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'schedule-item';
-            div.innerHTML = `
-                <span class="schedule-time">⏰ ${item.timeStr}</span>
-                <button class="schedule-cancel" data-index="${index}">Отменить</button>
-            `;
+            div.innerHTML = `<span class="schedule-time">⏰ ${item.timeStr}</span><button class="schedule-cancel" data-index="${index}">Отменить</button>`;
             scheduleList.appendChild(div);
         });
         document.querySelectorAll('.schedule-cancel').forEach(btn => {
-            animateDynamicButton(btn);
+            addButtonAnimation(btn);
             btn.addEventListener('click', (e) => {
                 const idx = parseInt(e.target.getAttribute('data-index'));
                 cancelSchedule(idx);
@@ -278,9 +279,7 @@
 
     function cancelSchedule(index) {
         const item = scheduledItems[index];
-        if (item && item.timer) {
-            clearTimeout(item.timer);
-        }
+        if (item && item.timer) clearTimeout(item.timer);
         scheduledItems.splice(index, 1);
         scheduledTimers.splice(index, 1);
         updateScheduleList();
@@ -289,28 +288,16 @@
     }
 
     function scheduleEngineStart(dt) {
-        const now = Date.now();
-        const delay = dt.getTime() - now;
-        if (delay <= 0) {
-            alert('Выберите время в будущем');
-            return false;
-        }
+        const delay = dt.getTime() - Date.now();
+        if (delay <= 0) { alert('Выберите время в будущем'); return false; }
         const timer = setTimeout(() => {
             sendCommand('engine/state', 'ON');
             showNotification(`Запуск выполнен в ${dt.toLocaleString()}`);
             const idx = scheduledItems.findIndex(i => i.time.getTime() === dt.getTime());
-            if (idx !== -1) {
-                scheduledItems.splice(idx, 1);
-                scheduledTimers.splice(idx, 1);
-                updateScheduleList();
-            }
+            if (idx !== -1) { scheduledItems.splice(idx, 1); scheduledTimers.splice(idx, 1); updateScheduleList(); }
         }, delay);
         scheduledTimers.push(timer);
-        scheduledItems.push({
-            time: dt,
-            timeStr: dt.toLocaleString(),
-            timer: timer
-        });
+        scheduledItems.push({ time: dt, timeStr: dt.toLocaleString(), timer: timer });
         updateScheduleList();
         showNotification(`Запуск запланирован на ${dt.toLocaleString()}`);
         return true;
@@ -321,23 +308,13 @@
         if (!mapContainer) return;
         mapContainer.innerHTML = '<div id="leaflet-map" style="height: 100%; width: 100%;"></div>';
         map = L.map('leaflet-map').setView([55.751244, 37.618423], 13);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '',
-            subdomains: 'abcd',
-            minZoom: 0,
-            maxZoom: 20
-        }).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '', subdomains: 'abcd', minZoom: 0, maxZoom: 20 }).addTo(map);
         map.attributionControl.setPrefix(false);
         marker = L.marker([55.751244, 37.618423]).addTo(map);
     }
 
-    function updateMapPosition(lat, lon) {
-        if (map && marker && lat && lon) {
-            map.setView([lat, lon], 15);
-            marker.setLatLng([lat, lon]);
-        }
-    }
-
+    function updateMapPosition(lat, lon) { if (map && marker && lat && lon) { map.setView([lat, lon], 15); marker.setLatLng([lat, lon]); } }
+    
     function addToHistory(lat, lon) {
         if (!lat || !lon) return;
         const time = new Date().toLocaleTimeString();
@@ -352,21 +329,16 @@
     
     function updateMainButton(isRunning) {
         isEngineRunning = isRunning;
-        if (isRunning) { 
-            mainEngineBtn.textContent = '🛑 СТОП'; 
-            mainEngineBtn.classList.remove('start'); 
+        if (isRunning) {
+            mainEngineBtn.textContent = '🛑 СТОП';
+            mainEngineBtn.classList.remove('start');
             mainEngineBtn.classList.add('stop');
             const speed = parseFloat(document.getElementById('speed').innerText);
-            if (speed > 5) {
-                mainEngineBtn.disabled = true;
-                mainEngineBtn.style.opacity = '0.5';
-            } else {
-                mainEngineBtn.disabled = false;
-                mainEngineBtn.style.opacity = '1';
-            }
-        } else { 
-            mainEngineBtn.textContent = '🔥 СТАРТ'; 
-            mainEngineBtn.classList.remove('stop'); 
+            if (speed > 5) { mainEngineBtn.disabled = true; mainEngineBtn.style.opacity = '0.5'; }
+            else { mainEngineBtn.disabled = false; mainEngineBtn.style.opacity = '1'; }
+        } else {
+            mainEngineBtn.textContent = '🔥 СТАРТ';
+            mainEngineBtn.classList.remove('stop');
             mainEngineBtn.classList.add('start');
             mainEngineBtn.disabled = false;
             mainEngineBtn.style.opacity = '1';
@@ -378,6 +350,24 @@
         isArmed = armed;
         btnArmDisarm.textContent = armed ? '🔓 СНЯТЬ С ОХРАНЫ' : '🔒 ПОСТАВИТЬ НА ОХРАНУ';
         document.getElementById('securityStatus').innerHTML = armed ? '🔒 ВКЛЮЧЕНА' : '🔓 ВЫКЛЮЧЕНА';
+    }
+
+    function updateAutoTempUI() {
+        if (autoTempEnabled) {
+            autoTempStatusDiv.innerHTML = `✅ Автозапуск ВКЛЮЧЕН<br>❄️ Порог: ${autoTempThreshold}°C<br>⏱️ Прогрев: ${autoTempDuration} мин`;
+            autoTempStatusDiv.style.color = '#4ade80';
+        } else {
+            autoTempStatusDiv.innerHTML = '⚪ Автозапуск выключен';
+            autoTempStatusDiv.style.color = '#aaa';
+        }
+        sendAutoTempConfig();
+    }
+
+    function sendAutoTempConfig() {
+        if (client && client.connected) {
+            const config = JSON.stringify({ enabled: autoTempEnabled, threshold: autoTempThreshold, duration: autoTempDuration });
+            client.publish(`${currentPrefix}/autotemp/config`, config, { qos: 1, retain: false });
+        }
     }
 
     function sendCommand(topic, command) {
@@ -397,7 +387,7 @@
         client.on('connect', () => {
             connStatusDiv.textContent = '✅ Подключено к MQTT';
             connStatusDiv.style.color = '#4ade80';
-            const topics = [`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/engine/status`, `${prefix}/ready/status`, `${prefix}/engine/rpm`, `${prefix}/engine/temp`, `${prefix}/doors/status`, `${prefix}/security/status`];
+            const topics = [`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/engine/status`, `${prefix}/ready/status`, `${prefix}/engine/rpm`, `${prefix}/engine/temp`, `${prefix}/doors/status`, `${prefix}/security/status`, `${prefix}/autotemp/status`];
             client.subscribe(topics);
         });
         client.on('message', (topic, message) => {
@@ -409,27 +399,31 @@
                 case 'gps/speed': 
                     const speed = parseFloat(payload);
                     document.getElementById('speed').innerHTML = speed.toFixed(1) + ' км/ч';
-                    if (isEngineRunning && speed > 5) {
-                        mainEngineBtn.disabled = true;
-                        mainEngineBtn.style.opacity = '0.5';
-                    } else if (isEngineRunning) {
-                        mainEngineBtn.disabled = false;
-                        mainEngineBtn.style.opacity = '1';
-                    }
+                    if (isEngineRunning && speed > 5) { mainEngineBtn.disabled = true; mainEngineBtn.style.opacity = '0.5'; }
+                    else if (isEngineRunning) { mainEngineBtn.disabled = false; mainEngineBtn.style.opacity = '1'; }
                     break;
                 case 'engine/status': 
                     updateMainButton(payload === 'running');
-                    if (payload === 'running') {
-                        startTimer(false, 0);
-                    } else {
-                        stopTimer();
-                    }
+                    if (payload === 'running') { startTimer(false, 0); } else { stopTimer(); }
                     break;
                 case 'ready/status': document.getElementById('readyStatus').innerHTML = payload === 'ready' ? '✅ READY' : '❌ OFF'; break;
                 case 'engine/rpm': document.getElementById('rpm').innerHTML = payload + ' об/мин'; break;
                 case 'engine/temp': document.getElementById('temp').innerHTML = payload + ' °C'; break;
                 case 'doors/status': document.getElementById('doors').innerHTML = payload; break;
                 case 'security/status': updateArmButton(payload === 'armed'); break;
+                case 'autotemp/status':
+                    try {
+                        const status = JSON.parse(payload);
+                        autoTempEnabled = status.enabled;
+                        autoTempThreshold = status.threshold;
+                        autoTempDuration = status.duration;
+                        tempThreshold.value = autoTempThreshold;
+                        tempThresholdValue.innerText = autoTempThreshold;
+                        warmupDuration.value = autoTempDuration;
+                        warmupDurationValue.innerText = autoTempDuration;
+                        updateAutoTempUI();
+                    } catch(e) {}
+                    break;
             }
         });
         client.on('error', (err) => { console.error('MQTT error:', err); connStatusDiv.textContent = '❌ Ошибка MQTT'; connStatusDiv.style.color = '#f87171'; });
@@ -470,11 +464,7 @@
     mainEngineBtn.addEventListener('click', () => sendCommand('engine/state', isEngineRunning ? 'OFF' : 'ON'));
     btnCloseWindows.addEventListener('click', () => sendCommand('engine/state', 'CLOSE_WINDOWS'));
     btnArmDisarm.addEventListener('click', () => {
-        if (btnArmDisarm.textContent.includes('ПОСТАВИТЬ')) {
-            sendCommand('engine/state', 'ARM');
-        } else {
-            sendCommand('engine/state', 'DISARM');
-        }
+        sendCommand('engine/state', btnArmDisarm.textContent.includes('ПОСТАВИТЬ') ? 'ARM' : 'DISARM');
     });
     btnStartWarmup.addEventListener('click', () => {
         const minutes = parseInt(warmupTime.value);
@@ -483,28 +473,44 @@
         warmupPanel.classList.remove('active');
         showNotification(`Запущен прогрев на ${minutes} минут`);
     });
-    btnScheduleToggle.addEventListener('click', () => {
-        scheduleModal.style.display = 'flex';
-    });
+    btnScheduleToggle.addEventListener('click', () => { scheduleModal.style.display = 'flex'; });
     confirmScheduleBtn.addEventListener('click', () => {
         const dt = new Date(scheduleDateTime.value);
-        if (dt && dt > new Date()) {
-            scheduleEngineStart(dt);
-            scheduleModal.style.display = 'none';
-            scheduleDateTime.value = '';
-        } else {
-            alert('Выберите дату и время в будущем');
-        }
+        if (dt && dt > new Date()) { scheduleEngineStart(dt); scheduleModal.style.display = 'none'; scheduleDateTime.value = ''; }
+        else { alert('Выберите дату и время в будущем'); }
     });
-    closeModalBtn.addEventListener('click', () => {
-        scheduleModal.style.display = 'none';
+    btnAutoTempToggle.addEventListener('click', () => { autoTempPanel.classList.toggle('active'); warmupPanel.classList.remove('active'); });
+    btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); autoTempPanel.classList.remove('active'); });
+    btnStartAutoTemp.addEventListener('click', () => {
+        autoTempEnabled = true;
+        autoTempThreshold = parseInt(tempThreshold.value);
+        autoTempDuration = parseInt(warmupDuration.value);
+        updateAutoTempUI();
+        showNotification(`Автозапуск по температуре включён. Порог: ${autoTempThreshold}°C, прогрев: ${autoTempDuration} мин`);
     });
-    btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); });
+    btnStopAutoTemp.addEventListener('click', () => {
+        autoTempEnabled = false;
+        updateAutoTempUI();
+        showNotification('Автозапуск по температуре выключен');
+    });
+    tempThreshold.addEventListener('input', () => {
+        tempThresholdValue.innerText = tempThreshold.value;
+        autoTempThreshold = parseInt(tempThreshold.value);
+        if (autoTempEnabled) updateAutoTempUI();
+    });
+    warmupDuration.addEventListener('input', () => {
+        warmupDurationValue.innerText = warmupDuration.value;
+        autoTempDuration = parseInt(warmupDuration.value);
+        if (autoTempEnabled) updateAutoTempUI();
+    });
     btnClearHistory.addEventListener('click', () => { historyCoords = []; const list = document.getElementById('historyList'); if (list) list.innerHTML = '<div class="history-item">Нет данных</div>'; });
     settingsBtn.addEventListener('click', showConfig);
     imageBtn.addEventListener('click', () => imageModal.style.display = 'flex');
     closeModal.addEventListener('click', () => imageModal.style.display = 'none');
     saveImageBtn.addEventListener('click', () => { if (imageUpload.files[0]) { const reader = new FileReader(); reader.onload = (e) => { carImage.src = e.target.result; localStorage.setItem('carImage', e.target.result); }; reader.readAsDataURL(imageUpload.files[0]); } imageModal.style.display = 'none'; });
+    if (closeModalBtn) closeModalBtn.addEventListener('click', () => { scheduleModal.style.display = 'none'; });
+    window.addEventListener('click', (event) => { if (event.target === scheduleModal) scheduleModal.style.display = 'none'; });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && scheduleModal.style.display === 'flex') scheduleModal.style.display = 'none'; });
 
     const savedImage = localStorage.getItem('carImage');
     if (savedImage) carImage.src = savedImage;
