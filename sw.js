@@ -1,10 +1,11 @@
 const CACHE_NAME = 'lexus-pwa-v1';
 const urlsToCache = [
-    '/lexus-pwa/',
-    '/lexus-pwa/index.html',
-    '/lexus-pwa/manifest.json',
-    '/lexus-pwa/icon-lexus.png',
-    '/lexus-pwa/car-default.png'
+    '.',
+    'index.html',
+    'manifest.json',
+    'icon-lexus.png',
+    'car-default.png',
+    'sw-register.js'
 ];
 
 self.addEventListener('install', event => {
