@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lexus GS450h Control</title>
+    <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+    <link rel="apple-touch-icon" href="icon-lexus.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0a">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        /* Шапка с иконкой и кнопкой настроек */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+        .car-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .car-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .car-icon:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.02);
+        }
+        .settings-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: white;
+            opacity: 0.7;
+        }
+        /* Кнопки запуска/глушения */
+        .engine-buttons {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .engine-btn {
+            flex: 1;
+            padding: 25px;
+            font-size: 28px;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .engine-btn.start {
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: white;
+        }
+        .engine-btn.start:active {
+            transform: scale(0.98);
+            background: linear-gradient(135deg, #00d2ff, #00a2d6);
+        }
+        .engine-btn.stop {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+        .engine-btn.stop:active {
+            transform: scale(0.98);
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+        /* Карта */
+        .map-container {
+            background: #2a2a3a;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            height: 250px;
+            position: relative;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            background: #1e1e2e;
+        }
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e1e2e;
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px;
+        }
+        /* Информационная панель */
+        .info-panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            opacity: 0.7;
+        }
+        .info-value {
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-badge.ready {
+            background: #00b4db;
+            color: white;
+        }
+        .status-badge.off {
+            background: #555;
+            color: #ccc;
+        }
+        /* Панель дополнительных функций */
+        .functions-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .functions-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        .functions-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .func-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .func-btn:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.96);
+        }
+        .warmup-select {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 30px;
+            color: white;
+            font-size: 14px;
+        }
+        /* История GPS */
+        .history-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .history-list {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .history-item {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        /* Кнопка обновления */
+        .refresh-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            padding: 10px;
+            border-radius: 30px;
+            color: white;
+            width: 100%;
+            font-size: 14px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 30px;
+            padding: 20px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .modal button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #0083b0;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+        }
+        .connection-status {
+            text-align: center;
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+        @media (max-width: 480px) {
+            body { padding: 15px; }
+            .engine-btn { padding: 20px; font-size: 24px; }
+            .func-btn { padding: 8px 12px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="car-icon" id="carIcon">
+            <img id="carImage" src="car-default.png" alt="Car">
+        </div>
+        <h1 style="font-size: 20px;">LEXUS GS450h</h1>
+        <button class="settings-btn" id="settingsBtn">⚙️</button>
+    </div>
+
+    <div class="engine-buttons">
+        <button class="engine-btn start" id="btnStart">🔥 СТАРТ</button>
+        <button class="engine-btn stop" id="btnStop">🛑 СТОП</button>
+    </div>
+
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+
+    <div class="info-panel">
+        <div class="info-row">
+            <span class="info-label">🚗 Статус READY</span>
+            <span class="info-value" id="readyStatus">—</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">🔥 Обороты (RPM)</span>
+            <span class="info-value" id="rpm">—</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">🌡️ Температура ОЖ</span>
+            <span class="info-value" id="temp">— °C</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">📍 Координаты</span>
+            <span class="info-value" id="coords">—</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">📡 Скорость</span>
+            <span class="info-value" id="speed">— км/ч</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">🚪 Двери</span>
+            <span class="info-value" id="doors">—</span>
+        </div>
+    </div>
+
+    <div class="functions-panel">
+        <div class="functions-title">🔧 Дополнительные функции</div>
+        <div class="functions-grid">
+            <button class="func-btn" id="btnCloseWindows">🚫 Закрыть окна</button>
+            <button class="func-btn" id="btnArm">🔒 Поставить на охрану</button>
+            <button class="func-btn" id="btnDisarm">🔓 Снять с охраны</button>
+            <select id="warmupTime" class="warmup-select">
+                <option value="5">5 минут</option>
+                <option value="10" selected>10 минут</option>
+                <option value="15">15 минут</option>
+                <option value="20">20 минут</option>
+                <option value="25">25 минут</option>
+                <option value="30">30 минут</option>
+            </select>
+            <button class="func-btn" id="btnWarmup">🌡️ Прогрев</button>
+            <button class="func-btn" id="btnRefreshNow">🔄 Принудительное обновление</button>
+        </div>
+    </div>
+
+    <div class="history-panel">
+        <div class="functions-title">📜 История GPS (последние 10)</div>
+        <div class="history-list" id="historyList">
+            <div class="history-item">Нет данных</div>
+        </div>
+        <button class="refresh-btn" id="btnClearHistory">🗑️ Очистить историю</button>
+    </div>
+
+    <div class="connection-status" id="connStatus">
+        ⚠️ Подключение к MQTT...
+    </div>
+</div>
+
+<!-- Модальное окно для загрузки иконки -->
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <h3>Загрузить фото авто</h3>
+        <input type="file" id="imageUpload" accept="image/png, image/jpeg">
+        <button id="saveImageBtn">Сохранить</button>
+        <button id="closeModal">Закрыть</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/mqtt@5.0.0/dist/mqtt.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="sw-register.js"></script>
+<script>
+    // === НАСТРОЙКИ MQTT ===
+    const MQTT_HOST = "wss://m2.wqtt.ru:19608/mqtt";
+    const MQTT_USER = "u_4R5P64";
+    const MQTT_PASS = "fGAk3xqP";
+    const CLIENT_ID = "pwa_iphone_" + Math.random().toString(36).substring(7);
+    
+    // Топики
+    const TOPIC_ENGINE_STATE = "lexus/engine/state";
+    const TOPIC_GPS_LAT = "lexus/gps/latitude";
+    const TOPIC_GPS_LON = "lexus/gps/longitude";
+    const TOPIC_GPS_SPEED = "lexus/gps/speed";
+    const TOPIC_ENGINE_STATUS = "lexus/engine/status";
+    const TOPIC_READY_STATUS = "lexus/ready/status";
+    const TOPIC_RPM = "lexus/engine/rpm";
+    const TOPIC_TEMP = "lexus/engine/temp";
+    const TOPIC_DOORS = "lexus/doors/status";
+    
+    let client = null;
+    let map = null;
+    let marker = null;
+    let historyCoords = [];
+    let lastLat = null, lastLon = null;
+    
+    // DOM элементы
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+    const btnCloseWindows = document.getElementById('btnCloseWindows');
+    const btnArm = document.getElementById('btnArm');
+    const btnDisarm = document.getElementById('btnDisarm');
+    const btnWarmup = document.getElementById('btnWarmup');
+    const btnRefreshNow = document.getElementById('btnRefreshNow');
+    const btnClearHistory = document.getElementById('btnClearHistory');
+    const warmupSelect = document.getElementById('warmupTime');
+    const carImage = document.getElementById('carImage');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const imageModal = document.getElementById('imageModal');
+    const imageUpload = document.getElementById('imageUpload');
+    const saveImageBtn = document.getElementById('saveImageBtn');
+    const closeModal = document.getElementById('closeModal');
+    const connStatusDiv = document.getElementById('connStatus');
+    
+    // Функция обновления карты
+    function initMap() {
+        const mapDiv = document.getElementById('map');
+        mapDiv.innerHTML = '<div id="leaflet-map" style="height: 100%; width: 100%;"></div>';
+        map = L.map('leaflet-map').setView([55.751244, 37.618423], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+        }).addTo(map);
+        marker = L.marker([55.751244, 37.618423]).addTo(map);
+    }
+    
+    // Функция обновления позиции на карте
+    function updateMap(lat, lon) {
+        if (!map) initMap();
+        if (lat && lon) {
+            map.setView([lat, lon], 15);
+            marker.setLatLng([lat, lon]);
+        }
+    }
+    
+    // Добавление в историю
+    function addToHistory(lat, lon) {
+        const time = new Date().toLocaleTimeString();
+        historyCoords.unshift({ time, lat, lon });
+        if (historyCoords.length > 10) historyCoords.pop();
+        const historyList = document.getElementById('historyList');
+        historyList.innerHTML = historyCoords.map(h => 
+            `<div class="history-item">${h.time} | ${h.lat.toFixed(6)}, ${h.lon.toFixed(6)}</div>`
+        ).join('');
+        if (historyCoords.length === 0) historyList.innerHTML = '<div class="history-item">Нет данных</div>';
+    }
+    
+    // Отправка команды
+    function sendCommand(command) {
+        if (client && client.connected) {
+            client.publish(TOPIC_ENGINE_STATE, command, { qos: 1, retain: false });
+            showNotification(`Команда ${command} отправлена`);
+        } else {
+            alert('Нет подключения к MQTT');
+        }
+    }
+    
+    // Уведомление
+    function showNotification(msg) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Lexus Control', { body: msg, icon: 'icon-lexus.png' });
+        }
+    }
+    
+    // Подключение к MQTT
+    function connectMQTT() {
+        const options = { username: MQTT_USER, password: MQTT_PASS, clientId: CLIENT_ID, clean: true, reconnectPeriod: 5000, connectTimeout: 30000 };
+        client = mqtt.connect(MQTT_HOST, options);
+        client.on('connect', () => {
+            connStatusDiv.textContent = '✅ Подключено к MQTT';
+            connStatusDiv.style.color = '#4ade80';
+            client.subscribe(TOPIC_GPS_LAT);
+            client.subscribe(TOPIC_GPS_LON);
+            client.subscribe(TOPIC_GPS_SPEED);
+            client.subscribe(TOPIC_ENGINE_STATUS);
+            client.subscribe(TOPIC_READY_STATUS);
+            client.subscribe(TOPIC_RPM);
+            client.subscribe(TOPIC_TEMP);
+            client.subscribe(TOPIC_DOORS);
+        });
+        client.on('message', (topic, message) => {
+            const payload = message.toString();
+            console.log(`📨 ${topic}: ${payload}`);
+            switch(topic) {
+                case TOPIC_GPS_LAT: lastLat = parseFloat(payload); document.getElementById('coords').innerHTML = lastLat.toFixed(6) + ' / ' + (lastLon || '—'); if (lastLon) updateMap(lastLat, lastLon); break;
+                case TOPIC_GPS_LON: lastLon = parseFloat(payload); document.getElementById('coords').innerHTML = (lastLat || '—') + ' / ' + lastLon.toFixed(6); if (lastLat) updateMap(lastLat, lastLon); break;
+                case TOPIC_GPS_SPEED: document.getElementById('speed').innerHTML = parseFloat(payload).toFixed(1) + ' км/ч'; break;
+                case TOPIC_ENGINE_STATUS: document.getElementById('readyStatus').innerHTML = payload === 'running' ? '🏃‍♂️ ЗАПУЩЕН' : '⏹️ ЗАГЛУШЕН'; break;
+                case TOPIC_READY_STATUS: document.getElementById('readyStatus').innerHTML = payload === 'ready' ? '✅ READY' : '❌ OFF'; break;
+                case TOPIC_RPM: document.getElementById('rpm').innerHTML = payload + ' об/мин'; break;
+                case TOPIC_TEMP: document.getElementById('temp').innerHTML = payload + ' °C'; break;
+                case TOPIC_DOORS: document.getElementById('doors').innerHTML = payload; break;
+            }
+        });
+        client.on('error', (err) => { console.error('MQTT error:', err); connStatusDiv.textContent = '❌ Ошибка MQTT'; connStatusDiv.style.color = '#f87171'; });
+        client.on('close', () => { console.log('MQTT disconnected'); connStatusDiv.textContent = '⚠️ Отключено, переподключение...'; connStatusDiv.style.color = '#fbbf24'; });
+    }
+    
+    // Загрузка иконки
+    function loadCarImage() {
+        const saved = localStorage.getItem('carImage');
+        if (saved) carImage.src = saved;
+    }
+    function saveCarImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => { carImage.src = e.target.result; localStorage.setItem('carImage', e.target.result); };
+        reader.readAsDataURL(file);
+    }
+    
+    // Обработчики кнопок
+    btnStart.addEventListener('click', () => sendCommand('ON'));
+    btnStop.addEventListener('click', () => sendCommand('OFF'));
+    btnCloseWindows.addEventListener('click', () => sendCommand('CLOSE_WINDOWS'));
+    btnArm.addEventListener('click', () => sendCommand('ARM'));
+    btnDisarm.addEventListener('click', () => sendCommand('DISARM'));
+    btnWarmup.addEventListener('click', () => sendCommand(`WARMUP_${warmupSelect.value}`));
+    btnRefreshNow.addEventListener('click', () => { sendCommand('STATUS'); alert('Обновление данных...'); });
+    btnClearHistory.addEventListener('click', () => { historyCoords = []; document.getElementById('historyList').innerHTML = '<div class="history-item">Нет данных</div>'; });
+    settingsBtn.addEventListener('click', () => imageModal.style.display = 'flex');
+    closeModal.addEventListener('click', () => imageModal.style.display = 'none');
+    saveImageBtn.addEventListener('click', () => { if (imageUpload.files[0]) saveCarImage(imageUpload.files[0]); imageModal.style.display = 'none'; });
+    
+    // Запрос уведомлений
+    if ('Notification' in window && Notification.permission !== 'granted') Notification.requestPermission();
+    
+    // Инициализация
+    window.onload = () => {
+        loadCarImage();
+        initMap();
+        connectMQTT();
+    };
+</script>
+</body>
+</html>
