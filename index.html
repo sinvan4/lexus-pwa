@@ -93,7 +93,6 @@
                 <button class="func-btn" id="btnScheduleToggle">⏰ ЗАПУСК ПО ВРЕМЕНИ</button>
                 <button class="func-btn" id="btnWarmupToggle">🌡️ ПРОГРЕВ</button>
                 <button class="func-btn" id="btnAutoTempToggle">❄️ АВТОЗАПУСК ПО ТЕМПЕРАТУРЕ</button>
-                <button class="func-btn" id="btnHVBattToggle">🔋 УПРАВЛЕНИЕ ВВБ</button>
             </div>
             <div id="warmupPanel" class="expandable-panel">
                 <select id="warmupTime" class="time-select">
@@ -119,31 +118,6 @@
                     <button class="action-btn cancel-btn" id="btnStopAutoTemp" style="flex: 1;">⏹️ Отключить</button>
                 </div>
                 <div id="autoTempStatus" class="auto-temp-status">⚪ Автозапуск выключен</div>
-            </div>
-            <div id="hvbattPanel" class="expandable-panel">
-                <div>
-                    <label>🌡️ Температура ВВБ: <span id="hvbattTempCurrent">—</span>°C</label>
-                </div>
-                <div>
-                    <label>🌀 Скорость вентилятора: <span id="hvbattFanCurrent">0</span></label>
-                </div>
-                <div>
-                    <label>🌡️ Порог 1 (4 скор): <span id="hvbattTemp1">30</span>°C</label>
-                    <input type="range" id="hvbattTemp1Slider" min="25" max="40" value="30" step="1">
-                </div>
-                <div>
-                    <label>🌡️ Порог 2 (5 скор): <span id="hvbattTemp2">32</span>°C</label>
-                    <input type="range" id="hvbattTemp2Slider" min="25" max="40" value="32" step="1">
-                </div>
-                <div>
-                    <label>🌡️ Порог 3 (6 скор): <span id="hvbattTemp3">34</span>°C</label>
-                    <input type="range" id="hvbattTemp3Slider" min="25" max="40" value="34" step="1">
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="action-btn" id="btnStartHVBatt" style="flex: 1;">🔘 Включить</button>
-                    <button class="action-btn cancel-btn" id="btnStopHVBatt" style="flex: 1;">⏹️ Отключить</button>
-                </div>
-                <div id="hvbattStatus" class="auto-temp-status">⚪ Управление ВВБ выключено</div>
             </div>
             <div id="scheduleList"></div>
         </div>
@@ -177,7 +151,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="sw-register.js"></script>
 <script>
-        function addButtonAnimation(btn) {
+    function addButtonAnimation(btn) {
         if (!btn) return;
         btn.addEventListener('touchstart', function() { this.style.transform = 'scale(0.97)'; this.style.transition = 'transform 0.08s ease'; }, { passive: true });
         btn.addEventListener('touchend', function() { this.style.transform = 'scale(1)'; });
@@ -207,13 +181,6 @@
     let autoTempEnabled = false;
     let autoTempThreshold = -25;
     let autoTempDuration = 20;
-    
-    let hvbattEnabled = false;
-    let hvbattTemp1 = 30;
-    let hvbattTemp2 = 32;
-    let hvbattTemp3 = 34;
-    let hvbattCurrentTemp = 0;
-    let hvbattFanSpeed = 0;
 
     const mqttConfigPanel = document.getElementById('mqttConfigPanel');
     const mainInterface = document.getElementById('mainInterface');
@@ -230,10 +197,8 @@
     const btnWarmupToggle = document.getElementById('btnWarmupToggle');
     const btnScheduleToggle = document.getElementById('btnScheduleToggle');
     const btnAutoTempToggle = document.getElementById('btnAutoTempToggle');
-    const btnHVBattToggle = document.getElementById('btnHVBattToggle');
     const warmupPanel = document.getElementById('warmupPanel');
     const autoTempPanel = document.getElementById('autoTempPanel');
-    const hvbattPanel = document.getElementById('hvbattPanel');
     const btnStartWarmup = document.getElementById('btnStartWarmup');
     const warmupTime = document.getElementById('warmupTime');
     const tempThreshold = document.getElementById('tempThreshold');
@@ -243,12 +208,6 @@
     const btnStartAutoTemp = document.getElementById('btnStartAutoTemp');
     const btnStopAutoTemp = document.getElementById('btnStopAutoTemp');
     const autoTempStatusDiv = document.getElementById('autoTempStatus');
-    const hvbattTempCurrent = document.getElementById('hvbattTempCurrent');
-    const hvbattFanCurrent = document.getElementById('hvbattFanCurrent');
-    const hvbattTemp1Slider = document.getElementById('hvbattTemp1Slider');
-    const btnStartHVBatt = document.getElementById('btnStartHVBatt');
-    const btnStopHVBatt = document.getElementById('btnStopHVBatt');
-    const hvbattStatus = document.getElementById('hvbattStatus');
     const scheduleList = document.getElementById('scheduleList');
     const scheduleLimitWarning = document.getElementById('scheduleLimitWarning');
     const btnClearHistory = document.getElementById('btnClearHistory');
@@ -272,7 +231,7 @@
     }
 
     function disableAllCommands(disabled) {
-        const btns = [btnCloseWindows, btnArmDisarm, btnWarmupToggle, btnScheduleToggle, btnAutoTempToggle, btnHVBattToggle];
+        const btns = [btnCloseWindows, btnArmDisarm, btnWarmupToggle, btnScheduleToggle, btnAutoTempToggle];
         btns.forEach(btn => {
             if (disabled) {
                 btn.classList.add('disabled-btn');
@@ -464,28 +423,10 @@
         sendAutoTempConfig();
     }
 
-    function updateHVBattUI() {
-        if (hvbattEnabled) {
-            hvbattStatus.innerHTML = `✅ Управление ВВБ ВКЛЮЧЕНО<br>🌡️ Пороги: ${hvbattTemp1}°C / ${hvbattTemp2}°C / ${hvbattTemp3}°C`;
-            hvbattStatus.style.color = '#4ade80';
-        } else {
-            hvbattStatus.innerHTML = '⚪ Управление ВВБ выключено';
-            hvbattStatus.style.color = '#aaa';
-        }
-        sendHVBattConfig();
-    }
-
     function sendAutoTempConfig() {
         if (client && client.connected) {
             const config = JSON.stringify({ enabled: autoTempEnabled, threshold: autoTempThreshold, duration: autoTempDuration });
             client.publish(`${currentPrefix}/autotemp/config`, config, { qos: 1, retain: false });
-        }
-    }
-
-    function sendHVBattConfig() {
-        if (client && client.connected) {
-            const config = JSON.stringify({ enabled: hvbattEnabled, temp1: hvbattTemp1, temp2: hvbattTemp2, temp3: hvbattTemp3 });
-            client.publish(`${currentPrefix}/hvbatt/config`, config, { qos: 1, retain: false });
         }
     }
 
@@ -511,7 +452,7 @@
         client.on('connect', () => {
             connStatusDiv.textContent = '✅ Подключено к MQTT';
             connStatusDiv.style.color = '#4ade80';
-            const topics = [`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/ready/status`, `${prefix}/engine/temp`, `${prefix}/security/status`, `${prefix}/autotemp/status`, `${prefix}/hvbatt/temp`, `${prefix}/hvbatt/fan`, `${prefix}/hvbatt/status`];
+            const topics = [`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/ready/status`, `${prefix}/engine/temp`, `${prefix}/security/status`, `${prefix}/autotemp/status`];
             client.subscribe(topics);
         });
         client.on('message', (topic, message) => {
@@ -554,34 +495,6 @@
                         warmupDuration.value = autoTempDuration;
                         warmupDurationValue.innerText = autoTempDuration;
                         updateAutoTempUI();
-                    } catch(e) {}
-                    break;
-                case 'hvbatt/temp':
-                    hvbattCurrentTemp = parseFloat(payload);
-                    hvbattTempCurrent.innerHTML = hvbattCurrentTemp + '°C';
-                    let fan = 0;
-                    if (hvbattEnabled) {
-                        if (hvbattCurrentTemp >= hvbattTemp3) fan = 6;
-                        else if (hvbattCurrentTemp >= hvbattTemp2) fan = 5;
-                        else if (hvbattCurrentTemp >= hvbattTemp1) fan = 4;
-                    }
-                    hvbattFanSpeed = fan;
-                    hvbattFanCurrent.innerHTML = fan;
-                    break;
-                case 'hvbatt/status':
-                    try {
-                        const status = JSON.parse(payload);
-                        hvbattEnabled = status.enabled;
-                        hvbattTemp1 = status.temp1;
-                        hvbattTemp2 = status.temp2;
-                        hvbattTemp3 = status.temp3;
-                        hvbattTemp1Slider.value = hvbattTemp1;
-                        hvbattTemp1.innerText = hvbattTemp1;
-                        hvbattTemp2Slider.value = hvbattTemp2;
-                        hvbattTemp2.innerText = hvbattTemp2;
-                        hvbattTemp3Slider.value = hvbattTemp3;
-                        hvbattTemp3.innerText = hvbattTemp3;
-                        updateHVBattUI();
                     } catch(e) {}
                     break;
             }
@@ -651,7 +564,6 @@
     });
     btnAutoTempToggle.addEventListener('click', () => { autoTempPanel.classList.toggle('active'); warmupPanel.classList.remove('active'); });
     btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); autoTempPanel.classList.remove('active'); });
-    btnHVBattToggle.addEventListener('click', () => { hvbattPanel.classList.toggle('active'); autoTempPanel.classList.remove('active'); warmupPanel.classList.remove('active'); });
     btnStartAutoTemp.addEventListener('click', () => {
         if (isReady) {
             showNotification('⚠️ Невозможно включить автозапуск: READY уже активен');
@@ -668,19 +580,6 @@
         updateAutoTempUI();
         showNotification('Автозапуск по температуре выключен');
     });
-    btnStartHVBatt.addEventListener('click', () => {
-        hvbattEnabled = true;
-        hvbattTemp1 = parseInt(hvbattTemp1Slider.value);
-        hvbattTemp2 = parseInt(hvbattTemp2Slider.value);
-        hvbattTemp3 = parseInt(hvbattTemp3Slider.value);
-        updateHVBattUI();
-        showNotification(`Управление ВВБ включено. Пороги: ${hvbattTemp1}°C / ${hvbattTemp2}°C / ${hvbattTemp3}°C`);
-    });
-    btnStopHVBatt.addEventListener('click', () => {
-        hvbattEnabled = false;
-        updateHVBattUI();
-        showNotification('Управление ВВБ выключено');
-    });
     tempThreshold.addEventListener('input', () => {
         tempThresholdValue.innerText = tempThreshold.value;
         autoTempThreshold = parseInt(tempThreshold.value);
@@ -690,21 +589,6 @@
         warmupDurationValue.innerText = warmupDuration.value;
         autoTempDuration = parseInt(warmupDuration.value);
         if (autoTempEnabled) updateAutoTempUI();
-    });
-    hvbattTemp1Slider.addEventListener('input', () => {
-        hvbattTemp1.innerText = hvbattTemp1Slider.value;
-        hvbattTemp1 = parseInt(hvbattTemp1Slider.value);
-        if (hvbattEnabled) updateHVBattUI();
-    });
-    hvbattTemp2Slider.addEventListener('input', () => {
-        hvbattTemp2.innerText = hvbattTemp2Slider.value;
-        hvbattTemp2 = parseInt(hvbattTemp2Slider.value);
-        if (hvbattEnabled) updateHVBattUI();
-    });
-    hvbattTemp3Slider.addEventListener('input', () => {
-        hvbattTemp3.innerText = hvbattTemp3Slider.value;
-        hvbattTemp3 = parseInt(hvbattTemp3Slider.value);
-        if (hvbattEnabled) updateHVBattUI();
     });
     btnClearHistory.addEventListener('click', () => { historyCoords = []; const list = document.getElementById('historyList'); if (list) list.innerHTML = '<div class="history-item">Нет данных</div>'; });
     settingsBtn.addEventListener('click', showConfig);
