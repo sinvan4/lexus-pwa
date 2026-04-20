@@ -16,32 +16,38 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; }
         .car-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 25px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; transition: all 0.3s; }
         .car-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .settings-btn, .image-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: white; opacity: 0.7; margin-left: 10px; }
+        .settings-btn, .image-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: white; opacity: 0.7; margin-left: 10px; transition: transform 0.1s ease; }
+        .settings-btn:active, .image-btn:active { transform: scale(0.95); }
         .mqtt-form { background: rgba(0,0,0,0.7); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
         .mqtt-form h3 { margin-bottom: 15px; }
         .mqtt-form input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; font-size: 16px; }
-        .mqtt-form button { background: #0083b0; border: none; padding: 12px; border-radius: 30px; color: white; font-size: 18px; margin-top: 10px; width: 100%; cursor: pointer; }
-        .engine-main-btn { width: 100%; padding: 25px; font-size: 28px; font-weight: bold; border: none; border-radius: 40px; margin-bottom: 20px; transition: 0.2s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .mqtt-form button { background: #0083b0; border: none; padding: 12px; border-radius: 30px; color: white; font-size: 18px; margin-top: 10px; width: 100%; cursor: pointer; transition: transform 0.1s ease; }
+        .mqtt-form button:active { transform: scale(0.98); }
+        .engine-main-btn { width: 100%; padding: 25px; font-size: 28px; font-weight: bold; border: none; border-radius: 40px; margin-bottom: 20px; transition: transform 0.1s ease, background 0.3s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .engine-main-btn:active { transform: scale(0.97); }
         .engine-main-btn.start { background: linear-gradient(135deg, #00b4db, #0083b0); color: white; }
         .engine-main-btn.stop { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: white; }
-        .engine-main-btn:active { transform: scale(0.98); }
         .info-panel, .functions-panel, .history-panel { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; margin-bottom: 20px; }
         .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .functions-grid { display: flex; flex-direction: column; gap: 10px; }
-        .func-btn { background: rgba(255,255,255,0.15); border: none; padding: 12px; border-radius: 30px; color: white; font-size: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .func-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.98); }
+        .func-btn { background: rgba(255,255,255,0.15); border: none; padding: 12px; border-radius: 30px; color: white; font-size: 16px; text-align: center; cursor: pointer; transition: transform 0.1s ease, background 0.2s; }
+        .func-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.97); }
         .expandable-panel { display: none; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 15px; flex-wrap: wrap; gap: 10px; align-items: center; }
         .expandable-panel.active { display: flex; }
         .time-select, .datetime-input { background: rgba(255,255,255,0.2); border: none; padding: 10px; border-radius: 20px; color: white; flex: 1; }
-        .action-btn { background: #0083b0; border: none; padding: 10px 15px; border-radius: 20px; color: white; cursor: pointer; }
+        .action-btn { background: #0083b0; border: none; padding: 10px 15px; border-radius: 20px; color: white; cursor: pointer; transition: transform 0.1s ease; }
+        .action-btn:active { transform: scale(0.95); }
         .history-list { max-height: 150px; overflow-y: auto; font-size: 12px; font-family: monospace; }
         .history-item { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         #map-container { height: 250px; width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: #1e1e2e; }
         #leaflet-map { height: 100%; width: 100%; }
         .connection-status { text-align: center; font-size: 12px; opacity: 0.7; margin-top: 10px; }
+        .timer-display { font-size: 24px; font-weight: bold; text-align: center; font-family: monospace; margin-top: 10px; color: #00b4db; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: #1a1a2e; border-radius: 30px; padding: 20px; width: 80%; max-width: 300px; text-align: center; }
         .flex-btns { display: flex; gap: 10px; }
+        .cancel-schedule { background: #ff4b2b; margin-left: 10px; }
+        .schedule-info { font-size: 12px; color: #aaa; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -67,6 +73,7 @@
 
     <div id="mainInterface" style="display: none;">
         <button class="engine-main-btn start" id="mainEngineBtn">🔥 СТАРТ</button>
+        <div id="timerDisplay" class="timer-display" style="display: none;">00:00:00</div>
 
         <div class="info-panel">
             <div class="info-row"><span class="info-label">🚗 Статус</span><span class="info-value" id="readyStatus">—</span></div>
@@ -85,13 +92,19 @@
                 <button class="func-btn" id="btnScheduleToggle">⏰ ЗАПУСК ПО ВРЕМЕНИ</button>
             </div>
             <div id="warmupPanel" class="expandable-panel">
-                <select id="warmupTime" class="time-select"><option value="5">5 мин</option><option value="10" selected>10 мин</option><option value="15">15 мин</option><option value="20">20 мин</option><option value="25">25 мин</option><option value="30">30 мин</option></select>
-                <button class="action-btn" id="btnStartWarmup">Запустить</button>
+                <select id="warmupTime" class="time-select">
+                    <option value="5">5 минут</option><option value="10" selected>10 минут</option>
+                    <option value="15">15 минут</option><option value="20">20 минут</option>
+                    <option value="25">25 минут</option><option value="30">30 минут</option>
+                </select>
+                <button class="action-btn" id="btnStartWarmup">Запустить прогрев</button>
             </div>
             <div id="schedulePanel" class="expandable-panel">
                 <input type="datetime-local" id="scheduleTime" class="datetime-input">
                 <button class="action-btn" id="btnScheduleStart">Запланировать</button>
+                <button class="action-btn cancel-schedule" id="btnCancelSchedule">Отменить</button>
             </div>
+            <div id="scheduleInfo" class="schedule-info"></div>
         </div>
 
         <div class="history-panel">
@@ -114,13 +127,17 @@
 <script src="sw-register.js"></script>
 <script>
     let client = null;
-    let map = null;
-    let marker = null;
+    let map = null, marker = null;
     let historyCoords = [];
     let lastLat = null, lastLon = null;
     let isEngineRunning = false;
     let currentPrefix = "lexus";
     let scheduledTimer = null;
+    let scheduledTimeDisplay = null;
+    let engineTimer = null;
+    let engineStartTime = null;
+    let isWarmupMode = false;
+    let warmupSeconds = 0;
 
     const mqttConfigPanel = document.getElementById('mqttConfigPanel');
     const mainInterface = document.getElementById('mainInterface');
@@ -140,8 +157,10 @@
     const schedulePanel = document.getElementById('schedulePanel');
     const btnStartWarmup = document.getElementById('btnStartWarmup');
     const btnScheduleStart = document.getElementById('btnScheduleStart');
+    const btnCancelSchedule = document.getElementById('btnCancelSchedule');
     const warmupTime = document.getElementById('warmupTime');
     const scheduleTime = document.getElementById('scheduleTime');
+    const scheduleInfo = document.getElementById('scheduleInfo');
     const btnClearHistory = document.getElementById('btnClearHistory');
     const carImage = document.getElementById('carImage');
     const settingsBtn = document.getElementById('settingsBtn');
@@ -149,6 +168,51 @@
     const imageModal = document.getElementById('imageModal');
     const saveImageBtn = document.getElementById('saveImageBtn');
     const closeModal = document.getElementById('closeModal');
+    const timerDisplay = document.getElementById('timerDisplay');
+
+    function formatTime(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer(isWarmup, warmupMin) {
+        if (engineTimer) clearInterval(engineTimer);
+        engineStartTime = Date.now();
+        isWarmupMode = isWarmup;
+        warmupSeconds = warmupMin * 60;
+        timerDisplay.style.display = 'block';
+        
+        engineTimer = setInterval(() => {
+            if (!isEngineRunning) {
+                stopTimer();
+                return;
+            }
+            let elapsed;
+            if (isWarmupMode) {
+                elapsed = Math.floor((Date.now() - engineStartTime) / 1000);
+                const remaining = Math.max(0, warmupSeconds - elapsed);
+                timerDisplay.textContent = `ОСТАЛОСЬ: ${formatTime(remaining)}`;
+                if (remaining <= 0) {
+                    sendCommand('engine/state', 'OFF');
+                    stopTimer();
+                    showNotification('Прогрев завершён, двигатель заглушен');
+                }
+            } else {
+                elapsed = Math.floor((Date.now() - engineStartTime) / 1000);
+                timerDisplay.textContent = `ВРЕМЯ РАБОТЫ: ${formatTime(elapsed)}`;
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        if (engineTimer) {
+            clearInterval(engineTimer);
+            engineTimer = null;
+        }
+        timerDisplay.style.display = 'none';
+    }
 
     function initMap() {
         const mapContainer = document.getElementById('map-container');
@@ -186,8 +250,26 @@
     
     function updateMainButton(isRunning) {
         isEngineRunning = isRunning;
-        if (isRunning) { mainEngineBtn.textContent = '🛑 СТОП'; mainEngineBtn.classList.remove('start'); mainEngineBtn.classList.add('stop'); }
-        else { mainEngineBtn.textContent = '🔥 СТАРТ'; mainEngineBtn.classList.remove('stop'); mainEngineBtn.classList.add('start'); }
+        if (isRunning) { 
+            mainEngineBtn.textContent = '🛑 СТОП'; 
+            mainEngineBtn.classList.remove('start'); 
+            mainEngineBtn.classList.add('stop');
+            const speed = parseFloat(document.getElementById('speed').innerText);
+            if (speed > 5) {
+                mainEngineBtn.disabled = true;
+                mainEngineBtn.style.opacity = '0.5';
+            } else {
+                mainEngineBtn.disabled = false;
+                mainEngineBtn.style.opacity = '1';
+            }
+        } else { 
+            mainEngineBtn.textContent = '🔥 СТАРТ'; 
+            mainEngineBtn.classList.remove('stop'); 
+            mainEngineBtn.classList.add('start');
+            mainEngineBtn.disabled = false;
+            mainEngineBtn.style.opacity = '1';
+            stopTimer();
+        }
     }
     
     function updateArmButton(isArmed) { btnArmDisarm.textContent = isArmed ? '🔓 СНЯТЬ С ОХРАНЫ' : '🔒 ПОСТАВИТЬ НА ОХРАНУ'; }
@@ -199,6 +281,25 @@
             console.log(`📤 ${fullTopic} = ${command}`);
             return true;
         } else { alert('Нет подключения к MQTT'); return false; }
+    }
+
+    function scheduleEngineStart(dt) {
+        if (scheduledTimer) clearTimeout(scheduledTimer);
+        const delay = dt.getTime() - Date.now();
+        if (delay <= 0) {
+            alert('Выберите время в будущем');
+            return false;
+        }
+        scheduledTimer = setTimeout(() => {
+            sendCommand('engine/state', 'ON');
+            showNotification(`Запуск выполнен в ${dt.toLocaleString()}`);
+            scheduleInfo.textContent = '';
+            scheduledTimer = null;
+        }, delay);
+        scheduledTimeDisplay = dt;
+        scheduleInfo.textContent = `⏰ Запланирован запуск на ${dt.toLocaleString()}`;
+        showNotification(`Запуск запланирован на ${dt.toLocaleString()}`);
+        return true;
     }
 
     function connectMQTT(host, port, user, pass, prefix) {
@@ -218,8 +319,25 @@
             switch(shortTopic) {
                 case 'gps/latitude': lastLat = parseFloat(payload); document.getElementById('coords').innerHTML = (lastLat?.toFixed(6) || '—') + ' / ' + (lastLon?.toFixed(6) || '—'); break;
                 case 'gps/longitude': lastLon = parseFloat(payload); document.getElementById('coords').innerHTML = (lastLat?.toFixed(6) || '—') + ' / ' + lastLon.toFixed(6); addToHistory(lastLat, lastLon); updateMapPosition(lastLat, lastLon); break;
-                case 'gps/speed': document.getElementById('speed').innerHTML = parseFloat(payload).toFixed(1) + ' км/ч'; break;
-                case 'engine/status': updateMainButton(payload === 'running'); break;
+                case 'gps/speed': 
+                    const speed = parseFloat(payload);
+                    document.getElementById('speed').innerHTML = speed.toFixed(1) + ' км/ч';
+                    if (isEngineRunning && speed > 5) {
+                        mainEngineBtn.disabled = true;
+                        mainEngineBtn.style.opacity = '0.5';
+                    } else if (isEngineRunning) {
+                        mainEngineBtn.disabled = false;
+                        mainEngineBtn.style.opacity = '1';
+                    }
+                    break;
+                case 'engine/status': 
+                    updateMainButton(payload === 'running');
+                    if (payload === 'running') {
+                        startTimer(false, 0);
+                    } else {
+                        stopTimer();
+                    }
+                    break;
                 case 'ready/status': document.getElementById('readyStatus').innerHTML = payload === 'ready' ? '✅ READY' : '❌ OFF'; break;
                 case 'engine/rpm': document.getElementById('rpm').innerHTML = payload + ' об/мин'; break;
                 case 'engine/temp': document.getElementById('temp').innerHTML = payload + ' °C'; break;
@@ -260,32 +378,45 @@
         loadSettings();
     });
 
-    // --- Обработчики кнопок (ИСПРАВЛЕНЫ) ---
+    // --- Обработчики ---
     mainEngineBtn.addEventListener('click', () => sendCommand('engine/state', isEngineRunning ? 'OFF' : 'ON'));
     btnCloseWindows.addEventListener('click', () => sendCommand('engine/state', 'CLOSE_WINDOWS'));
     btnArmDisarm.addEventListener('click', () => {
         if (btnArmDisarm.textContent.includes('ПОСТАВИТЬ')) {
             sendCommand('engine/state', 'ARM');
+            updateArmButton(true);
         } else {
             sendCommand('engine/state', 'DISARM');
+            updateArmButton(false);
         }
     });
-    btnStartWarmup.addEventListener('click', () => sendCommand('engine/state', `WARMUP_${warmupTime.value}`));
+    btnStartWarmup.addEventListener('click', () => {
+        const minutes = parseInt(warmupTime.value);
+        startTimer(true, minutes);
+        sendCommand('engine/state', `WARMUP_${minutes}`);
+        warmupPanel.classList.remove('active');
+        showNotification(`Запущен прогрев на ${minutes} минут`);
+    });
     btnScheduleStart.addEventListener('click', () => {
         const dt = new Date(scheduleTime.value);
         if (dt && dt > new Date()) {
-            if (scheduledTimer) clearTimeout(scheduledTimer);
-            const delay = dt.getTime() - Date.now();
-            scheduledTimer = setTimeout(() => {
-                sendCommand('engine/state', 'ON');
-                showNotification(`Запуск выполнен в ${dt.toLocaleString()}`);
-            }, delay);
-            showNotification(`Запуск запланирован на ${dt.toLocaleString()}`);
+            if (scheduleEngineStart(dt)) {
+                schedulePanel.classList.remove('active');
+            }
         } else {
             alert('Выберите дату и время в будущем');
         }
     });
-    
+    btnCancelSchedule.addEventListener('click', () => {
+        if (scheduledTimer) {
+            clearTimeout(scheduledTimer);
+            scheduledTimer = null;
+            scheduleInfo.textContent = '';
+            showNotification('Запланированный запуск отменён');
+        } else {
+            alert('Нет активных запланированных запусков');
+        }
+    });
     btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); schedulePanel.classList.remove('active'); });
     btnScheduleToggle.addEventListener('click', () => { schedulePanel.classList.toggle('active'); warmupPanel.classList.remove('active'); });
     btnClearHistory.addEventListener('click', () => { historyCoords = []; const list = document.getElementById('historyList'); if (list) list.innerHTML = '<div class="history-item">Нет данных</div>'; });
