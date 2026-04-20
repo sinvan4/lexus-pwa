@@ -79,8 +79,7 @@
         <div id="timerDisplay" class="timer-display" style="display: none;"></div>
 
         <div class="info-panel">
-            <div class="info-row"><span class="info-label">🚗 Статус</span><span class="info-value" id="readyStatus">—</span></div>
-            <div class="info-row"><span class="info-label">🔥 Обороты</span><span class="info-value" id="rpm">—</span></div>
+            <div class="info-row"><span class="info-label">🚗 Статус READY</span><span class="info-value" id="readyStatus">—</span></div>
             <div class="info-row"><span class="info-label">🌡️ Температура ОЖ</span><span class="info-value" id="temp">— °C</span></div>
             <div class="info-row"><span class="info-label">📍 Координаты</span><span class="info-value" id="coords">—</span></div>
             <div class="info-row"><span class="info-label">📡 Скорость</span><span class="info-value" id="speed">— км/ч</span></div>
@@ -99,7 +98,7 @@
                 <select id="warmupTime" class="time-select">
                     <option value="5">5 минут</option><option value="10" selected>10 минут</option>
                     <option value="15">15 минут</option><option value="20">20 минут</option>
-                    <option value="25">25 минут</option><option value="30">30 минут</option>
+                    <option value="25">25 минут</option>
                 </select>
                 <button class="action-btn" id="btnStartWarmup">Запустить прогрев</button>
             </div>
@@ -167,7 +166,7 @@
     let map = null, marker = null;
     let historyCoords = [];
     let lastLat = null, lastLon = null;
-    let isEngineRunning = false;
+    let isReady = false;
     let isArmed = false;
     let currentPrefix = "lexus";
     let scheduledTimers = [];
@@ -177,9 +176,8 @@
     let isWarmupMode = false;
     let warmupSeconds = 0;
     let maxEngineRunTimer = null;
-    const MAX_ENGINE_RUN_SECONDS = 25 * 60; // 25 минут
+    const MAX_ENGINE_RUN_SECONDS = 25 * 60;
     
-    // Настройки автозапуска по температуре
     let autoTempEnabled = false;
     let autoTempThreshold = -25;
     let autoTempDuration = 20;
@@ -246,9 +244,9 @@
     function startMaxEngineTimer() {
         if (maxEngineRunTimer) clearTimeout(maxEngineRunTimer);
         maxEngineRunTimer = setTimeout(() => {
-            if (isEngineRunning) {
+            if (isReady) {
                 sendCommand('engine/state', 'OFF');
-                showNotification('⚠️ Двигатель автоматически заглушен (лимит 25 минут)');
+                showNotification('⚠️ Автоматическое выключение READY (лимит 25 минут)');
             }
         }, MAX_ENGINE_RUN_SECONDS * 1000);
     }
@@ -269,22 +267,22 @@
         startMaxEngineTimer();
         
         engineTimer = setInterval(() => {
-            if (!isEngineRunning) { stopTimer(); return; }
+            if (!isReady) { stopTimer(); return; }
             const elapsed = Math.floor((Date.now() - engineStartTime) / 1000);
             if (isWarmupMode) {
                 const remaining = Math.max(0, warmupSeconds - elapsed);
                 timerDisplay.textContent = `🌡️ ПРОГРЕВ: ${formatTime(remaining)}`;
-                if (remaining <= 0 && isEngineRunning) {
+                if (remaining <= 0 && isReady) {
                     sendCommand('engine/state', 'OFF');
                     stopTimer();
-                    showNotification('Прогрев завершён, двигатель заглушен');
+                    showNotification('Прогрев завершён, READY выключен');
                 }
             } else {
-                timerDisplay.textContent = `⏱️ ВРЕМЯ РАБОТЫ: ${formatTime(elapsed)}`;
+                timerDisplay.textContent = `⏱️ ВРЕМЯ В РЕЖИМЕ READY: ${formatTime(elapsed)}`;
                 if (elapsed >= MAX_ENGINE_RUN_SECONDS) {
                     sendCommand('engine/state', 'OFF');
                     stopTimer();
-                    showNotification('⚠️ Двигатель автоматически заглушен (лимит 25 минут)');
+                    showNotification('⚠️ Автоматическое выключение READY (лимит 25 минут)');
                 }
             }
         }, 1000);
@@ -339,11 +337,11 @@
         const delay = dt.getTime() - Date.now();
         if (delay <= 0) { alert('Выберите время в будущем'); return false; }
         const timer = setTimeout(() => {
-            if (!isEngineRunning) {
+            if (!isReady) {
                 sendCommand('engine/state', 'ON');
                 showNotification(`Запуск выполнен в ${dt.toLocaleString()}`);
             } else {
-                showNotification(`⚠️ Запуск не выполнен: двигатель уже работает`);
+                showNotification(`⚠️ Запуск не выполнен: READY уже активен`);
             }
             const idx = scheduledItems.findIndex(i => i.time.getTime() === dt.getTime());
             if (idx !== -1) { scheduledItems.splice(idx, 1); scheduledTimers.splice(idx, 1); updateScheduleList(); }
@@ -379,13 +377,13 @@
 
     function showNotification(msg) { if ('Notification' in window && Notification.permission === 'granted') new Notification('Lexus Control', { body: msg, icon: 'icon-lexus.png' }); }
     
-    function updateMainButton(isRunning) {
-        isEngineRunning = isRunning;
+    function updateMainButton(ready) {
+        isReady = ready;
         const currentSpeed = parseFloat(document.getElementById('speed').innerText) || 0;
         const highSpeed = currentSpeed > 5;
         
-        if (isRunning) {
-            mainEngineBtn.textContent = '🛑 СТОП';
+        if (ready) {
+            mainEngineBtn.textContent = '🛑 ВЫКЛЮЧИТЬ READY';
             mainEngineBtn.classList.remove('start');
             mainEngineBtn.classList.add('stop');
             if (highSpeed) {
@@ -398,7 +396,7 @@
                 disableAllCommands(false);
             }
         } else {
-            mainEngineBtn.textContent = '🔥 СТАРТ';
+            mainEngineBtn.textContent = '🔥 ВКЛЮЧИТЬ READY';
             mainEngineBtn.classList.remove('stop');
             mainEngineBtn.classList.add('start');
             mainEngineBtn.disabled = false;
@@ -434,7 +432,7 @@
 
     function sendCommand(topic, command) {
         const currentSpeed = parseFloat(document.getElementById('speed').innerText) || 0;
-        if (currentSpeed > 5 && topic === 'engine/state' && (command === 'ON' || command === 'OFF' || command === 'WARMUP')) {
+        if (currentSpeed > 5 && (command === 'ON' || command === 'OFF')) {
             alert('Невозможно отправить команду: автомобиль движется (скорость > 5 км/ч)');
             return false;
         }
@@ -453,7 +451,7 @@
         client.on('connect', () => {
             connStatusDiv.textContent = '✅ Подключено к MQTT';
             connStatusDiv.style.color = '#4ade80';
-            const topics = [`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/engine/status`, `${prefix}/ready/status`, `${prefix}/engine/rpm`, `${prefix}/engine/temp`, `${prefix}/security/status`, `${prefix}/autotemp/status`];
+            const topics = [`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/ready/status`, `${prefix}/engine/temp`, `${prefix}/security/status`, `${prefix}/autotemp/status`];
             client.subscribe(topics);
         });
         client.on('message', (topic, message) => {
@@ -465,26 +463,24 @@
                 case 'gps/speed': 
                     const speed = parseFloat(payload);
                     document.getElementById('speed').innerHTML = speed.toFixed(1) + ' км/ч';
-                    if (isEngineRunning && speed > 5) {
+                    if (isReady && speed > 5) {
                         mainEngineBtn.disabled = true;
                         mainEngineBtn.style.opacity = '0.5';
                         disableAllCommands(true);
-                    } else if (isEngineRunning) {
+                    } else if (isReady) {
                         mainEngineBtn.disabled = false;
                         mainEngineBtn.style.opacity = '1';
                         disableAllCommands(false);
                     }
                     break;
-                case 'engine/status': 
-                    updateMainButton(payload === 'running');
-                    if (payload === 'running') {
+                case 'ready/status': 
+                    updateMainButton(payload === 'ready');
+                    if (payload === 'ready') {
                         startTimer(false, 0);
                     } else {
                         stopTimer();
                     }
                     break;
-                case 'ready/status': document.getElementById('readyStatus').innerHTML = payload === 'ready' ? '✅ READY' : '❌ OFF'; break;
-                case 'engine/rpm': document.getElementById('rpm').innerHTML = payload + ' об/мин'; break;
                 case 'engine/temp': document.getElementById('temp').innerHTML = payload + ' °C'; break;
                 case 'security/status': updateArmButton(payload === 'armed'); break;
                 case 'autotemp/status':
@@ -537,14 +533,14 @@
     });
 
     // --- Обработчики ---
-    mainEngineBtn.addEventListener('click', () => sendCommand('engine/state', isEngineRunning ? 'OFF' : 'ON'));
+    mainEngineBtn.addEventListener('click', () => sendCommand('engine/state', isReady ? 'OFF' : 'ON'));
     btnCloseWindows.addEventListener('click', () => sendCommand('engine/state', 'CLOSE_WINDOWS'));
     btnArmDisarm.addEventListener('click', () => {
         sendCommand('engine/state', btnArmDisarm.textContent.includes('ПОСТАВИТЬ') ? 'ARM' : 'DISARM');
     });
     btnStartWarmup.addEventListener('click', () => {
-        if (isEngineRunning) {
-            showNotification('⚠️ Двигатель уже работает, прогрев не запущен');
+        if (isReady) {
+            showNotification('⚠️ READY уже активен, прогрев не запущен');
             return;
         }
         const minutes = parseInt(warmupTime.value);
@@ -568,8 +564,8 @@
     btnAutoTempToggle.addEventListener('click', () => { autoTempPanel.classList.toggle('active'); warmupPanel.classList.remove('active'); });
     btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); autoTempPanel.classList.remove('active'); });
     btnStartAutoTemp.addEventListener('click', () => {
-        if (isEngineRunning) {
-            showNotification('⚠️ Невозможно включить автозапуск: двигатель уже работает');
+        if (isReady) {
+            showNotification('⚠️ Невозможно включить автозапуск: READY уже активен');
             return;
         }
         autoTempEnabled = true;
