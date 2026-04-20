@@ -19,6 +19,7 @@
         .settings-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: white; opacity: 0.7; }
         /* Форма ввода MQTT */
         .mqtt-form { background: rgba(0,0,0,0.7); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+        .mqtt-form h3 { margin-bottom: 15px; }
         .mqtt-form input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; font-size: 16px; }
         .mqtt-form button { background: #0083b0; border: none; padding: 12px; border-radius: 30px; color: white; font-size: 18px; margin-top: 10px; width: 100%; cursor: pointer; }
         /* Умная кнопка СТАРТ/СТОП */
@@ -54,25 +55,25 @@
         <button class="settings-btn" id="settingsBtn">⚙️</button>
     </div>
 
-    <!-- Блок настроек MQTT (показывается при первом запуске) -->
+    <!-- Блок настроек MQTT -->
     <div id="mqttConfigPanel" class="mqtt-form" style="display: none;">
-        <h3>Настройки MQTT</h3>
-        <input type="text" id="mqttHost" placeholder="Сервер (например, m2.wqtt.ru)" value="m2.wqtt.ru">
-        <input type="text" id="mqttPort" placeholder="Порт (например, 19608)" value="19608">
-        <input type="text" id="mqttUser" placeholder="Пользователь">
+        <h3>Настройки подключения</h3>
+        <input type="text" id="mqttHost" placeholder="Адрес сервера" value="m2.wqtt.ru">
+        <input type="text" id="mqttPort" placeholder="Порт" value="19608">
+        <input type="text" id="mqttUser" placeholder="Имя пользователя">
         <input type="password" id="mqttPass" placeholder="Пароль">
-        <input type="text" id="mqttPrefix" placeholder="Префикс топика (если нужен)" value="lexus">
+        <input type="text" id="mqttPrefix" placeholder="Префикс топика (необязательно)" value="lexus">
         <button id="saveMqttBtn">Сохранить и подключиться</button>
     </div>
 
-    <!-- Основной интерфейс (скрыт, пока нет настроек) -->
+    <!-- Основной интерфейс -->
     <div id="mainInterface" style="display: none;">
         <button class="engine-main-btn start" id="mainEngineBtn">🔥 СТАРТ</button>
 
         <div class="info-panel">
-            <div class="info-row"><span class="info-label">🚗 Статус READY</span><span class="info-value" id="readyStatus">—</span></div>
-            <div class="info-row"><span class="info-label">🔥 Обороты (RPM)</span><span class="info-value" id="rpm">—</span></div>
-            <div class="info-row"><span class="info-label">🌡️ Температура ОЖ</span><span class="info-value" id="temp">— °C</span></div>
+            <div class="info-row"><span class="info-label">🚗 Статус</span><span class="info-value" id="readyStatus">—</span></div>
+            <div class="info-row"><span class="info-label">🔥 Обороты</span><span class="info-value" id="rpm">—</span></div>
+            <div class="info-row"><span class="info-label">🌡️ Температура</span><span class="info-value" id="temp">— °C</span></div>
             <div class="info-row"><span class="info-label">📍 Координаты</span><span class="info-value" id="coords">—</span></div>
             <div class="info-row"><span class="info-label">📡 Скорость</span><span class="info-value" id="speed">— км/ч</span></div>
             <div class="info-row"><span class="info-label">🚪 Двери</span><span class="info-value" id="doors">—</span></div>
@@ -87,33 +88,33 @@
             </div>
             <div id="warmupPanel" class="expandable-panel">
                 <select id="warmupTime" class="time-select"><option value="5">5 мин</option><option value="10" selected>10 мин</option><option value="15">15 мин</option><option value="20">20 мин</option><option value="25">25 мин</option><option value="30">30 мин</option></select>
-                <button class="action-btn" id="btnStartWarmup">Запустить прогрев</button>
+                <button class="action-btn" id="btnStartWarmup">Запустить</button>
             </div>
             <div id="schedulePanel" class="expandable-panel">
                 <input type="datetime-local" id="scheduleTime" class="datetime-input">
-                <button class="action-btn" id="btnScheduleStart">Запланировать запуск</button>
+                <button class="action-btn" id="btnScheduleStart">Запланировать</button>
             </div>
         </div>
 
         <div class="history-panel">
-            <div class="functions-title">📜 История GPS (последние 10)</div>
+            <div class="functions-title">📜 История координат</div>
             <div class="history-list" id="historyList"><div class="history-item">Нет данных</div></div>
-            <button class="func-btn" id="btnClearHistory" style="margin-top:10px;">🗑️ Очистить историю</button>
+            <button class="func-btn" id="btnClearHistory" style="margin-top:10px;">🗑️ Очистить</button>
         </div>
 
         <div class="map-container"><div id="map"></div></div>
-        <div class="connection-status" id="connStatus">⚠️ Введите настройки MQTT</div>
+        <div class="connection-status" id="connStatus">⚠️ Введите настройки</div>
     </div>
 </div>
 
-<div id="imageModal" class="modal"><div class="modal-content"><h3>Загрузить фото авто</h3><input type="file" id="imageUpload" accept="image/png, image/jpeg"><button id="saveImageBtn">Сохранить</button><button id="closeModal">Закрыть</button></div></div>
+<div id="imageModal" class="modal"><div class="modal-content"><h3>Загрузить фото</h3><input type="file" id="imageUpload" accept="image/png, image/jpeg"><button id="saveImageBtn">Сохранить</button><button id="closeModal">Закрыть</button></div></div>
 
 <script src="https://unpkg.com/mqtt@5.0.0/dist/mqtt.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="sw-register.js"></script>
 <script>
-    // --- Глобальные переменные ---
+    // --- Переменные ---
     let client = null;
     let map = null, marker = null;
     let historyCoords = [];
@@ -150,7 +151,7 @@
     const saveImageBtn = document.getElementById('saveImageBtn');
     const closeModal = document.getElementById('closeModal');
 
-    // --- Функции ---
+    // --- Карта ---
     function initMap() {
         const mapDiv = document.getElementById('map');
         if (!mapDiv) return;
@@ -161,7 +162,6 @@
     }
 
     function updateMap(lat, lon) { if (map && lat && lon) { map.setView([lat, lon], 15); marker.setLatLng([lat, lon]); } }
-
     function addToHistory(lat, lon) {
         if (!lat || !lon) return;
         const time = new Date().toLocaleTimeString();
@@ -171,26 +171,23 @@
         if (historyList) historyList.innerHTML = historyCoords.map(h => `<div class="history-item">${h.time} | ${h.lat.toFixed(6)}, ${h.lon.toFixed(6)}</div>`).join('');
         if (historyCoords.length === 0 && historyList) historyList.innerHTML = '<div class="history-item">Нет данных</div>';
     }
-
     function showNotification(msg) { if ('Notification' in window && Notification.permission === 'granted') new Notification('Lexus Control', { body: msg, icon: 'icon-lexus.png' }); }
-
     function updateMainButton(isRunning) {
         isEngineRunning = isRunning;
         if (isRunning) { mainEngineBtn.textContent = '🛑 СТОП'; mainEngineBtn.classList.remove('start'); mainEngineBtn.classList.add('stop'); }
         else { mainEngineBtn.textContent = '🔥 СТАРТ'; mainEngineBtn.classList.remove('stop'); mainEngineBtn.classList.add('start'); }
     }
-
     function updateArmButton(isArmed) { btnArmDisarm.textContent = isArmed ? '🔓 СНЯТЬ С ОХРАНЫ' : '🔒 ПОСТАВИТЬ НА ОХРАНУ'; }
 
+    // --- Отправка команд ---
     function sendCommand(topic, command) {
         if (client && client.connected) {
             const fullTopic = currentPrefix ? `${currentPrefix}/${topic}` : topic;
             client.publish(fullTopic, command, { qos: 1, retain: false });
-            console.log(`📤 Отправлено: ${fullTopic} = ${command}`);
+            console.log(`📤 ${fullTopic} = ${command}`);
             return true;
-        } else { alert('Нет подключения к MQTT'); return false; }
+        } else { alert('Нет подключения'); return false; }
     }
-
     function sendEngineCommand(command, targetStatus) {
         if (sendCommand('engine/state', command)) {
             const handler = (topic, message) => {
@@ -205,14 +202,14 @@
         }
     }
 
-    // --- MQTT подключение ---
+    // --- MQTT ---
     function connectMQTT(host, port, user, pass, prefix) {
         currentPrefix = prefix;
         const wsUrl = `wss://${host}:${port}/mqtt`;
         const options = { username: user, password: pass, clientId: "pwa_" + Math.random().toString(36).substring(7), clean: true, reconnectPeriod: 5000, connectTimeout: 30000 };
         client = mqtt.connect(wsUrl, options);
         client.on('connect', () => {
-            connStatusDiv.textContent = '✅ Подключено к MQTT';
+            connStatusDiv.textContent = '✅ Подключено';
             connStatusDiv.style.color = '#4ade80';
             const topics = [`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/engine/status`, `${prefix}/ready/status`, `${prefix}/engine/rpm`, `${prefix}/engine/temp`, `${prefix}/doors/status`];
             client.subscribe(topics);
@@ -231,11 +228,16 @@
                 case 'doors/status': document.getElementById('doors').innerHTML = payload; break;
             }
         });
-        client.on('error', (err) => { console.error('MQTT error:', err); connStatusDiv.textContent = '❌ Ошибка MQTT'; connStatusDiv.style.color = '#f87171'; });
-        client.on('close', () => { console.log('MQTT disconnected'); connStatusDiv.textContent = '⚠️ Отключено, переподключение...'; connStatusDiv.style.color = '#fbbf24'; });
+        client.on('error', (err) => { console.error('MQTT error:', err); connStatusDiv.textContent = '❌ Ошибка'; connStatusDiv.style.color = '#f87171'; });
+        client.on('close', () => { console.log('MQTT disconnected'); connStatusDiv.textContent = '⚠️ Отключено'; connStatusDiv.style.color = '#fbbf24'; });
     }
 
-    // --- Сохранение настроек и инициализация ---
+    // --- Настройки ---
+    function showConfig() {
+        mqttConfigPanel.style.display = 'block';
+        mainInterface.style.display = 'none';
+        if (client) { client.end(); client = null; }
+    }
     function loadSettings() {
         const host = localStorage.getItem('mqtt_host');
         if (host) {
@@ -248,12 +250,8 @@
             mainInterface.style.display = 'block';
             connectMQTT(mqttHost.value, mqttPort.value, mqttUser.value, mqttPass.value, mqttPrefix.value);
             initMap();
-        } else {
-            mqttConfigPanel.style.display = 'block';
-            mainInterface.style.display = 'none';
-        }
+        } else { showConfig(); }
     }
-
     saveMqttBtn.addEventListener('click', () => {
         localStorage.setItem('mqtt_host', mqttHost.value);
         localStorage.setItem('mqtt_port', mqttPort.value);
@@ -262,8 +260,9 @@
         localStorage.setItem('mqtt_prefix', mqttPrefix.value);
         loadSettings();
     });
+    settingsBtn.addEventListener('click', showConfig);
 
-    // --- Обработчики событий ---
+    // --- Обработчики ---
     mainEngineBtn.addEventListener('click', () => { if (isEngineRunning) sendEngineCommand('OFF', 'stopped'); else sendEngineCommand('ON', 'running'); });
     btnCloseWindows.addEventListener('click', () => sendCommand('windows/close', 'CLOSE'));
     btnArmDisarm.addEventListener('click', () => { if (btnArmDisarm.textContent.includes('ПОСТАВИТЬ')) sendCommand('security/arm', 'ARM'); else sendCommand('security/disarm', 'DISARM'); });
@@ -276,13 +275,13 @@
             if (scheduledTimer) clearTimeout(scheduledTimer);
             const delay = dt.getTime() - Date.now();
             scheduledTimer = setTimeout(() => sendEngineCommand('ON', 'running'), delay);
-            showNotification(`Запуск запланирован на ${dt.toLocaleString()}`);
-        } else alert('Выберите корректную дату и время в будущем');
+            showNotification(`Запуск в ${dt.toLocaleString()}`);
+        } else alert('Выберите дату в будущем');
     });
     btnClearHistory.addEventListener('click', () => { historyCoords = []; const list = document.getElementById('historyList'); if (list) list.innerHTML = '<div class="history-item">Нет данных</div>'; });
-    settingsBtn.addEventListener('click', () => imageModal.style.display = 'flex');
     closeModal.addEventListener('click', () => imageModal.style.display = 'none');
     saveImageBtn.addEventListener('click', () => { if (imageUpload.files[0]) { const reader = new FileReader(); reader.onload = (e) => { carImage.src = e.target.result; localStorage.setItem('carImage', e.target.result); }; reader.readAsDataURL(imageUpload.files[0]); } imageModal.style.display = 'none'; });
+    settingsBtn.addEventListener('click', showConfig);
 
     const savedImage = localStorage.getItem('carImage');
     if (savedImage) carImage.src = savedImage;
