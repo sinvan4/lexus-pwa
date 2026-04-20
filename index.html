@@ -17,17 +17,14 @@
         .car-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 25px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; transition: all 0.3s; }
         .car-icon img { width: 100%; height: 100%; object-fit: cover; }
         .settings-btn, .image-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: white; opacity: 0.7; margin-left: 10px; }
-        /* Форма ввода MQTT */
         .mqtt-form { background: rgba(0,0,0,0.7); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
         .mqtt-form h3 { margin-bottom: 15px; }
         .mqtt-form input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; font-size: 16px; }
         .mqtt-form button { background: #0083b0; border: none; padding: 12px; border-radius: 30px; color: white; font-size: 18px; margin-top: 10px; width: 100%; cursor: pointer; }
-        /* Умная кнопка СТАРТ/СТОП */
         .engine-main-btn { width: 100%; padding: 25px; font-size: 28px; font-weight: bold; border: none; border-radius: 40px; margin-bottom: 20px; transition: 0.2s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .engine-main-btn.start { background: linear-gradient(135deg, #00b4db, #0083b0); color: white; }
         .engine-main-btn.stop { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: white; }
         .engine-main-btn:active { transform: scale(0.98); }
-        /* Панели */
         .info-panel, .functions-panel, .history-panel { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; margin-bottom: 20px; }
         .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .functions-grid { display: flex; flex-direction: column; gap: 10px; }
@@ -39,7 +36,6 @@
         .action-btn { background: #0083b0; border: none; padding: 10px 15px; border-radius: 20px; color: white; cursor: pointer; }
         .history-list { max-height: 150px; overflow-y: auto; font-size: 12px; font-family: monospace; }
         .history-item { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        /* Карта */
         #map-container { height: 250px; width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: #1e1e2e; }
         #leaflet-map { height: 100%; width: 100%; }
         .connection-status { text-align: center; font-size: 12px; opacity: 0.7; margin-top: 10px; }
@@ -59,7 +55,6 @@
         </div>
     </div>
 
-    <!-- Блок настроек MQTT -->
     <div id="mqttConfigPanel" class="mqtt-form" style="display: none;">
         <h3>Настройки MQTT</h3>
         <input type="text" id="mqttHost" placeholder="Адрес сервера" value="m2.wqtt.ru">
@@ -70,7 +65,6 @@
         <button id="saveMqttBtn">Сохранить и подключиться</button>
     </div>
 
-    <!-- Основной интерфейс -->
     <div id="mainInterface" style="display: none;">
         <button class="engine-main-btn start" id="mainEngineBtn">🔥 СТАРТ</button>
 
@@ -106,7 +100,6 @@
             <button class="func-btn" id="btnClearHistory" style="margin-top:10px;">🗑️ Очистить</button>
         </div>
 
-        <!-- Контейнер для карты -->
         <div id="map-container"></div>
         
         <div class="connection-status" id="connStatus">⚠️ Введите настройки</div>
@@ -120,7 +113,6 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="sw-register.js"></script>
 <script>
-    // --- Переменные ---
     let client = null;
     let map = null;
     let marker = null;
@@ -130,7 +122,6 @@
     let currentPrefix = "lexus";
     let scheduledTimer = null;
 
-    // DOM элементы
     const mqttConfigPanel = document.getElementById('mqttConfigPanel');
     const mainInterface = document.getElementById('mainInterface');
     const saveMqttBtn = document.getElementById('saveMqttBtn');
@@ -159,29 +150,18 @@
     const saveImageBtn = document.getElementById('saveImageBtn');
     const closeModal = document.getElementById('closeModal');
 
-    // --- Инициализация карты OSM с кнопками управления ---
     function initMap() {
         const mapContainer = document.getElementById('map-container');
         if (!mapContainer) return;
-        
-        // Очищаем контейнер
         mapContainer.innerHTML = '<div id="leaflet-map" style="height: 100%; width: 100%;"></div>';
-        
-        // Создаем карту с кнопками зума
         map = L.map('leaflet-map').setView([55.751244, 37.618423], 13);
-        
-        // Добавляем нейтральный слой OSM (без авторских прав)
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '',
             subdomains: 'abcd',
             minZoom: 0,
             maxZoom: 20
         }).addTo(map);
-        
-        // Убираем надпись об авторских правах, но оставляем кнопки зума
         map.attributionControl.setPrefix(false);
-        
-        // Добавляем маркер
         marker = L.marker([55.751244, 37.618423]).addTo(map);
     }
 
@@ -192,7 +172,6 @@
         }
     }
 
-    // --- Функции приложения ---
     function addToHistory(lat, lon) {
         if (!lat || !lon) return;
         const time = new Date().toLocaleTimeString();
@@ -202,15 +181,17 @@
         if (historyList) historyList.innerHTML = historyCoords.map(h => `<div class="history-item">${h.time} | ${h.lat.toFixed(6)}, ${h.lon.toFixed(6)}</div>`).join('');
         if (historyCoords.length === 0 && historyList) historyList.innerHTML = '<div class="history-item">Нет данных</div>';
     }
+
     function showNotification(msg) { if ('Notification' in window && Notification.permission === 'granted') new Notification('Lexus Control', { body: msg, icon: 'icon-lexus.png' }); }
+    
     function updateMainButton(isRunning) {
         isEngineRunning = isRunning;
         if (isRunning) { mainEngineBtn.textContent = '🛑 СТОП'; mainEngineBtn.classList.remove('start'); mainEngineBtn.classList.add('stop'); }
         else { mainEngineBtn.textContent = '🔥 СТАРТ'; mainEngineBtn.classList.remove('stop'); mainEngineBtn.classList.add('start'); }
     }
+    
     function updateArmButton(isArmed) { btnArmDisarm.textContent = isArmed ? '🔓 СНЯТЬ С ОХРАНЫ' : '🔒 ПОСТАВИТЬ НА ОХРАНУ'; }
 
-    // --- Отправка команд ---
     function sendCommand(topic, command) {
         if (client && client.connected) {
             const fullTopic = currentPrefix ? `${currentPrefix}/${topic}` : topic;
@@ -219,21 +200,7 @@
             return true;
         } else { alert('Нет подключения к MQTT'); return false; }
     }
-    function sendEngineCommand(command, targetStatus) {
-        if (sendCommand('engine/state', command)) {
-            const handler = (topic, message) => {
-                const expectedTopic = currentPrefix ? `${currentPrefix}/engine/status` : 'engine/status';
-                if (topic === expectedTopic && message.toString() === targetStatus) {
-                    updateMainButton(command === 'ON');
-                    client.removeListener('message', handler);
-                    showNotification(`Двигатель ${command === 'ON' ? 'запущен' : 'остановлен'}`);
-                }
-            };
-            client.on('message', handler);
-        }
-    }
 
-    // --- MQTT ---
     function connectMQTT(host, port, user, pass, prefix) {
         currentPrefix = prefix;
         const wsUrl = `wss://${host}:${port}/mqtt`;
@@ -263,13 +230,12 @@
         client.on('close', () => { console.log('MQTT disconnected'); connStatusDiv.textContent = '⚠️ Отключено, переподключение...'; connStatusDiv.style.color = '#fbbf24'; });
     }
 
-    // --- Настройки ---
     function showConfig() {
         mqttConfigPanel.style.display = 'block';
         mainInterface.style.display = 'none';
         if (client) { client.end(); client = null; }
     }
-    function showImageModal() { imageModal.style.display = 'flex'; }
+
     function loadSettings() {
         const host = localStorage.getItem('mqtt_host');
         if (host) {
@@ -284,6 +250,7 @@
             initMap();
         } else { showConfig(); }
     }
+
     saveMqttBtn.addEventListener('click', () => {
         localStorage.setItem('mqtt_host', mqttHost.value);
         localStorage.setItem('mqtt_port', mqttPort.value);
@@ -292,28 +259,40 @@
         localStorage.setItem('mqtt_prefix', mqttPrefix.value);
         loadSettings();
     });
-    settingsBtn.addEventListener('click', showConfig);
-    imageBtn.addEventListener('click', showImageModal);
-    closeModal.addEventListener('click', () => imageModal.style.display = 'none');
-    saveImageBtn.addEventListener('click', () => { if (imageUpload.files[0]) { const reader = new FileReader(); reader.onload = (e) => { carImage.src = e.target.result; localStorage.setItem('carImage', e.target.result); }; reader.readAsDataURL(imageUpload.files[0]); } imageModal.style.display = 'none'; });
 
-    // --- Обработчики ---
-    mainEngineBtn.addEventListener('click', () => { if (isEngineRunning) sendEngineCommand('OFF', 'stopped'); else sendEngineCommand('ON', 'running'); });
-    btnCloseWindows.addEventListener('click', () => sendCommand('windows/close', 'CLOSE'));
-    btnArmDisarm.addEventListener('click', () => { if (btnArmDisarm.textContent.includes('ПОСТАВИТЬ')) sendCommand('security/arm', 'ARM'); else sendCommand('security/disarm', 'DISARM'); });
-    btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); schedulePanel.classList.remove('active'); });
-    btnScheduleToggle.addEventListener('click', () => { schedulePanel.classList.toggle('active'); warmupPanel.classList.remove('active'); });
-    btnStartWarmup.addEventListener('click', () => sendEngineCommand(`warmup/${warmupTime.value}`, 'running'));
+    // --- Обработчики кнопок (ИСПРАВЛЕНЫ) ---
+    mainEngineBtn.addEventListener('click', () => sendCommand('engine/state', isEngineRunning ? 'OFF' : 'ON'));
+    btnCloseWindows.addEventListener('click', () => sendCommand('engine/state', 'CLOSE_WINDOWS'));
+    btnArmDisarm.addEventListener('click', () => {
+        if (btnArmDisarm.textContent.includes('ПОСТАВИТЬ')) {
+            sendCommand('engine/state', 'ARM');
+        } else {
+            sendCommand('engine/state', 'DISARM');
+        }
+    });
+    btnStartWarmup.addEventListener('click', () => sendCommand('engine/state', `WARMUP_${warmupTime.value}`));
     btnScheduleStart.addEventListener('click', () => {
         const dt = new Date(scheduleTime.value);
         if (dt && dt > new Date()) {
             if (scheduledTimer) clearTimeout(scheduledTimer);
             const delay = dt.getTime() - Date.now();
-            scheduledTimer = setTimeout(() => sendEngineCommand('ON', 'running'), delay);
+            scheduledTimer = setTimeout(() => {
+                sendCommand('engine/state', 'ON');
+                showNotification(`Запуск выполнен в ${dt.toLocaleString()}`);
+            }, delay);
             showNotification(`Запуск запланирован на ${dt.toLocaleString()}`);
-        } else alert('Выберите дату и время в будущем');
+        } else {
+            alert('Выберите дату и время в будущем');
+        }
     });
+    
+    btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); schedulePanel.classList.remove('active'); });
+    btnScheduleToggle.addEventListener('click', () => { schedulePanel.classList.toggle('active'); warmupPanel.classList.remove('active'); });
     btnClearHistory.addEventListener('click', () => { historyCoords = []; const list = document.getElementById('historyList'); if (list) list.innerHTML = '<div class="history-item">Нет данных</div>'; });
+    settingsBtn.addEventListener('click', showConfig);
+    imageBtn.addEventListener('click', () => imageModal.style.display = 'flex');
+    closeModal.addEventListener('click', () => imageModal.style.display = 'none');
+    saveImageBtn.addEventListener('click', () => { if (imageUpload.files[0]) { const reader = new FileReader(); reader.onload = (e) => { carImage.src = e.target.result; localStorage.setItem('carImage', e.target.result); }; reader.readAsDataURL(imageUpload.files[0]); } imageModal.style.display = 'none'; });
 
     const savedImage = localStorage.getItem('carImage');
     if (savedImage) carImage.src = savedImage;
