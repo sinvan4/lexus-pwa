@@ -51,6 +51,20 @@
         .range-input { width: 100%; margin: 5px 0; }
         .range-labels { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.7; }
         .disabled-btn { opacity: 0.5; pointer-events: none; }
+        
+        /* НОВОЕ: Стили для панели ВВБ */
+        .hvbatt-panel { background: rgba(0,0,0,0.3); border-radius: 15px; padding: 10px; margin-top: 10px; }
+        .hvbatt-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .temp-good { color: #4ade80; }
+        .temp-warning { color: #fbbf24; }
+        .temp-danger { color: #f87171; }
+        .fan-speed-0 { color: #6b7280; }
+        .fan-speed-1 { color: #3b82f6; }
+        .fan-speed-2 { color: #10b981; }
+        .fan-speed-3 { color: #84cc16; }
+        .fan-speed-4 { color: #eab308; }
+        .fan-speed-5 { color: #f97316; }
+        .fan-speed-6 { color: #ef4444; }
     </style>
 </head>
 <body>
@@ -84,6 +98,8 @@
             <div class="info-row"><span class="info-label">📍 Координаты</span><span class="info-value" id="coords">—</span></div>
             <div class="info-row"><span class="info-label">📡 Скорость</span><span class="info-value" id="speed">— км/ч</span></div>
             <div class="info-row"><span class="info-label">🔒 Охрана</span><span class="info-value" id="securityStatus">—</span></div>
+            <!-- НОВОЕ: строка температуры ВВБ в основной панели -->
+            <div class="info-row"><span class="info-label">🔋 Температура ВВБ</span><span class="info-value" id="hvbattTempMain">— °C</span></div>
         </div>
 
         <div class="functions-panel">
@@ -93,6 +109,8 @@
                 <button class="func-btn" id="btnScheduleToggle">⏰ ЗАПУСК ПО ВРЕМЕНИ</button>
                 <button class="func-btn" id="btnWarmupToggle">🌡️ ПРОГРЕВ</button>
                 <button class="func-btn" id="btnAutoTempToggle">❄️ АВТОЗАПУСК ПО ТЕМПЕРАТУРЕ</button>
+                <!-- НОВОЕ: кнопка управления ВВБ -->
+                <button class="func-btn" id="btnHVBattToggle">🔋 УПРАВЛЕНИЕ ВВБ</button>
             </div>
             <div id="warmupPanel" class="expandable-panel">
                 <select id="warmupTime" class="time-select">
@@ -119,6 +137,49 @@
                 </div>
                 <div id="autoTempStatus" class="auto-temp-status">⚪ Автозапуск выключен</div>
             </div>
+            
+            <!-- НОВОЕ: Панель управления ВВБ -->
+            <div id="hvbattPanel" class="expandable-panel">
+                <div class="hvbatt-panel">
+                    <div class="hvbatt-row">
+                        <span>🌡️ Температура ВВБ:</span>
+                        <span id="hvbattTemp" class="temp-good">— °C</span>
+                    </div>
+                    <div class="hvbatt-row">
+                        <span>🌀 Вентилятор ВВБ:</span>
+                        <span id="hvbattFanSpeed">— скорость</span>
+                    </div>
+                    <div class="hvbatt-row">
+                        <span>⚙️ Режим:</span>
+                        <span id="hvbattMode">Автономный</span>
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <label>🌡️ Порог 1 (4 скорость): <span id="threshold1Val">30</span>°C</label>
+                        <input type="range" id="threshold1" class="range-input" min="25" max="40" value="30" step="1">
+                    </div>
+                    <div>
+                        <label>🌡️ Порог 2 (5 скорость): <span id="threshold2Val">32</span>°C</label>
+                        <input type="range" id="threshold2" class="range-input" min="25" max="40" value="32" step="1">
+                    </div>
+                    <div>
+                        <label>🌡️ Порог 3 (6 скорость): <span id="threshold3Val">34</span>°C</label>
+                        <input type="range" id="threshold3" class="range-input" min="25" max="40" value="34" step="1">
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <label>🌀 Подогрев батареи (3 скорость):</label>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <button class="action-btn" id="btnHeatingOn" style="flex:1;">🔘 Включить</button>
+                            <button class="action-btn cancel-btn" id="btnHeatingOff" style="flex:1;">⏹️ Отключить</button>
+                        </div>
+                        <div id="heatingStatus" class="auto-temp-status" style="margin-top: 5px;">⚪ Подогрев выключен</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="action-btn" id="btnHVBattApply" style="flex:1;">✅ Применить настройки</button>
+                        <button class="action-btn cancel-btn" id="btnHVBattReset" style="flex:1;">🔄 Сбросить</button>
+                    </div>
+                </div>
+            </div>
+            
             <div id="scheduleList"></div>
         </div>
 
@@ -181,6 +242,35 @@
     let autoTempEnabled = false;
     let autoTempThreshold = -25;
     let autoTempDuration = 20;
+
+    // НОВОЕ: переменные для ВВБ
+    let hvbattEnabled = true;  // контроллер всегда активен
+    let hvbattTemp = 0;
+    let hvbattFanSpeed = 0;
+    let hvbattThreshold1 = 30;
+    let hvbattThreshold2 = 32;
+    let hvbattThreshold3 = 34;
+    let heatingEnabled = false;  // подогрев батареи
+    let cabinTemp = 20;  // температура салона (получаем с CAN)
+
+    // DOM элементы для ВВБ (НОВОЕ)
+    const btnHVBattToggle = document.getElementById('btnHVBattToggle');
+    const hvbattPanel = document.getElementById('hvbattPanel');
+    const hvbattTempSpan = document.getElementById('hvbattTemp');
+    const hvbattFanSpeedSpan = document.getElementById('hvbattFanSpeed');
+    const hvbattModeSpan = document.getElementById('hvbattMode');
+    const threshold1Slider = document.getElementById('threshold1');
+    const threshold2Slider = document.getElementById('threshold2');
+    const threshold3Slider = document.getElementById('threshold3');
+    const threshold1Val = document.getElementById('threshold1Val');
+    const threshold2Val = document.getElementById('threshold2Val');
+    const threshold3Val = document.getElementById('threshold3Val');
+    const btnHVBattApply = document.getElementById('btnHVBattApply');
+    const btnHVBattReset = document.getElementById('btnHVBattReset');
+    const btnHeatingOn = document.getElementById('btnHeatingOn');
+    const btnHeatingOff = document.getElementById('btnHeatingOff');
+    const heatingStatusSpan = document.getElementById('heatingStatus');
+    const hvbattTempMain = document.getElementById('hvbattTempMain');
 
     const mqttConfigPanel = document.getElementById('mqttConfigPanel');
     const mainInterface = document.getElementById('mainInterface');
@@ -430,6 +520,97 @@
         }
     }
 
+    // НОВОЕ: Функция обновления UI ВВБ
+    function updateHVBattUI() {
+        // Обновляем отображение температуры с цветовой индикацией
+        let tempClass = 'temp-good';
+        if (hvbattTemp >= hvbattThreshold3) tempClass = 'temp-danger';
+        else if (hvbattTemp >= hvbattThreshold2) tempClass = 'temp-warning';
+        else if (hvbattTemp >= hvbattThreshold1) tempClass = 'temp-warning';
+        
+        hvbattTempSpan.innerHTML = `${hvbattTemp}°C`;
+        hvbattTempSpan.className = tempClass;
+        
+        if (hvbattTempMain) {
+            hvbattTempMain.innerHTML = `${hvbattTemp}°C`;
+            hvbattTempMain.className = tempClass;
+        }
+        
+        // Отображение скорости вентилятора с цветом
+        let fanClass = 'fan-speed-0';
+        if (hvbattFanSpeed === 1) fanClass = 'fan-speed-1';
+        else if (hvbattFanSpeed === 2) fanClass = 'fan-speed-2';
+        else if (hvbattFanSpeed === 3) fanClass = 'fan-speed-3';
+        else if (hvbattFanSpeed === 4) fanClass = 'fan-speed-4';
+        else if (hvbattFanSpeed === 5) fanClass = 'fan-speed-5';
+        else if (hvbattFanSpeed === 6) fanClass = 'fan-speed-6';
+        
+        let fanText = 'Выключен';
+        if (hvbattFanSpeed === 1) fanText = '1 скорость (мин)';
+        else if (hvbattFanSpeed === 2) fanText = '2 скорость';
+        else if (hvbattFanSpeed === 3) fanText = '3 скорость (подогрев)';
+        else if (hvbattFanSpeed === 4) fanText = '4 скорость';
+        else if (hvbattFanSpeed === 5) fanText = '5 скорость';
+        else if (hvbattFanSpeed === 6) fanText = '6 скорость (макс)';
+        
+        hvbattFanSpeedSpan.innerHTML = fanText;
+        hvbattFanSpeedSpan.className = fanClass;
+        
+        // Отображение режима
+        if (heatingEnabled && hvbattTemp < 10 && cabinTemp > 10) {
+            hvbattModeSpan.innerHTML = 'Подогрев батареи';
+            hvbattModeSpan.style.color = '#f97316';
+        } else if (hvbattTemp >= hvbattThreshold1) {
+            hvbattModeSpan.innerHTML = 'Охлаждение активно';
+            hvbattModeSpan.style.color = '#3b82f6';
+        } else {
+            hvbattModeSpan.innerHTML = 'Автономный (ожидание)';
+            hvbattModeSpan.style.color = '#6b7280';
+        }
+        
+        // Отображение статуса подогрева
+        if (heatingEnabled) {
+            heatingStatusSpan.innerHTML = '✅ Подогрев ВКЛЮЧЕН (при t<10°C и t салона>10°C)';
+            heatingStatusSpan.style.color = '#4ade80';
+        } else {
+            heatingStatusSpan.innerHTML = '⚪ Подогрев выключен';
+            heatingStatusSpan.style.color = '#aaa';
+        }
+        
+        // Отправляем конфигурацию на сервер
+        sendHVBattConfig();
+    }
+    
+    // НОВОЕ: Отправка конфигурации ВВБ на сервер
+    function sendHVBattConfig() {
+        if (client && client.connected) {
+            const config = JSON.stringify({
+                enabled: hvbattEnabled,
+                threshold1: hvbattThreshold1,
+                threshold2: hvbattThreshold2,
+                threshold3: hvbattThreshold3,
+                heatingEnabled: heatingEnabled
+            });
+            client.publish(`${currentPrefix}/hvbatt/config`, config, { qos: 1, retain: false });
+            console.log('📤 HVBatt config sent:', config);
+        }
+    }
+    
+    // НОВОЕ: Функция расчета скорости вентилятора (эмуляция работы контроллера)
+    function calculateFanSpeed(temp, heatingActive) {
+        // Приоритет: подогрев важнее охлаждения
+        if (heatingActive && hvbattTemp < 10 && cabinTemp > 10) {
+            return 3;  // 3 скорость для подогрева
+        }
+        
+        // Охлаждение по порогам
+        if (temp >= hvbattThreshold3) return 6;
+        if (temp >= hvbattThreshold2) return 5;
+        if (temp >= hvbattThreshold1) return 4;
+        
+        return 0;
+    }
+
     function sendCommand(topic, command) {
         const currentSpeed = parseFloat(document.getElementById('speed').innerText) || 0;
         if (currentSpeed > 5 && (command === 'ON' || command === 'OFF')) {
@@ -452,7 +633,20 @@
         client.on('connect', () => {
             connStatusDiv.textContent = '✅ Подключено к MQTT';
             connStatusDiv.style.color = '#4ade80';
-            const topics = [`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/ready/status`, `${prefix}/engine/temp`, `${prefix}/security/status`, `${prefix}/autotemp/status`];
+            // ИЗМЕНЕНО: добавлены топики ВВБ
+            const topics = [
+                `${prefix}/gps/latitude`, 
+                `${prefix}/gps/longitude`, 
+                `${prefix}/gps/speed`, 
+                `${prefix}/ready/status`, 
+                `${prefix}/engine/temp`, 
+                `${prefix}/security/status`, 
+                `${prefix}/autotemp/status`,
+                `${prefix}/hvbatt/temperature`,     // НОВОЕ
+                `${prefix}/hvbatt/fan_speed`,       // НОВОЕ
+                `${prefix}/hvbatt/config`,          // НОВОЕ
+                `${prefix}/cabin/temperature`       // НОВОЕ (температура салона)
+            ];
             client.subscribe(topics);
         });
         client.on('message', (topic, message) => {
@@ -496,6 +690,44 @@
                         warmupDurationValue.innerText = autoTempDuration;
                         updateAutoTempUI();
                     } catch(e) {}
+                    break;
+                // НОВОЕ: обработка топиков ВВБ
+                case 'hvbatt/temperature':
+                    hvbattTemp = parseFloat(payload);
+                    // Автоматически рассчитываем скорость вентилятора
+                    hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
+                    updateHVBattUI();
+                    // Отправляем команду на изменение скорости вентилятора (если нужно)
+                    if (client && client.connected) {
+                        client.publish(`${currentPrefix}/hvbatt/set_fan`, hvbattFanSpeed.toString(), { qos: 1 });
+                    }
+                    break;
+                case 'hvbatt/fan_speed':
+                    hvbattFanSpeed = parseInt(payload);
+                    updateHVBattUI();
+                    break;
+                case 'hvbatt/config':
+                    try {
+                        const config = JSON.parse(payload);
+                        hvbattThreshold1 = config.threshold1 || 30;
+                        hvbattThreshold2 = config.threshold2 || 32;
+                        hvbattThreshold3 = config.threshold3 || 34;
+                        heatingEnabled = config.heatingEnabled || false;
+                        // Обновляем слайдеры
+                        threshold1Slider.value = hvbattThreshold1;
+                        threshold2Slider.value = hvbattThreshold2;
+                        threshold3Slider.value = hvbattThreshold3;
+                        threshold1Val.innerText = hvbattThreshold1;
+                        threshold2Val.innerText = hvbattThreshold2;
+                        threshold3Val.innerText = hvbattThreshold3;
+                        updateHVBattUI();
+                    } catch(e) {}
+                    break;
+                case 'cabin/temperature':
+                    cabinTemp = parseFloat(payload);
+                    // Пересчитываем скорость вентилятора при изменении температуры салона
+                    hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
+                    updateHVBattUI();
                     break;
             }
         });
@@ -564,6 +796,14 @@
     });
     btnAutoTempToggle.addEventListener('click', () => { autoTempPanel.classList.toggle('active'); warmupPanel.classList.remove('active'); });
     btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); autoTempPanel.classList.remove('active'); });
+    
+    // НОВОЕ: обработчик кнопки ВВБ
+    btnHVBattToggle.addEventListener('click', () => { 
+        hvbattPanel.classList.toggle('active'); 
+        autoTempPanel.classList.remove('active');
+        warmupPanel.classList.remove('active');
+    });
+    
     btnStartAutoTemp.addEventListener('click', () => {
         if (isReady) {
             showNotification('⚠️ Невозможно включить автозапуск: READY уже активен');
@@ -590,6 +830,66 @@
         autoTempDuration = parseInt(warmupDuration.value);
         if (autoTempEnabled) updateAutoTempUI();
     });
+    
+    // НОВОЕ: обработчики для ВВБ
+    threshold1Slider.addEventListener('input', () => {
+        threshold1Val.innerText = threshold1Slider.value;
+        hvbattThreshold1 = parseInt(threshold1Slider.value);
+        // Пересчитываем скорость вентилятора
+        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
+        updateHVBattUI();
+    });
+    threshold2Slider.addEventListener('input', () => {
+        threshold2Val.innerText = threshold2Slider.value;
+        hvbattThreshold2 = parseInt(threshold2Slider.value);
+        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
+        updateHVBattUI();
+    });
+    threshold3Slider.addEventListener('input', () => {
+        threshold3Val.innerText = threshold3Slider.value;
+        hvbattThreshold3 = parseInt(threshold3Slider.value);
+        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
+        updateHVBattUI();
+    });
+    
+    btnHVBattApply.addEventListener('click', () => {
+        sendHVBattConfig();
+        showNotification('Настройки ВВБ сохранены');
+    });
+    
+    btnHVBattReset.addEventListener('click', () => {
+        hvbattThreshold1 = 30;
+        hvbattThreshold2 = 32;
+        hvbattThreshold3 = 34;
+        heatingEnabled = false;
+        threshold1Slider.value = 30;
+        threshold2Slider.value = 32;
+        threshold3Slider.value = 34;
+        threshold1Val.innerText = 30;
+        threshold2Val.innerText = 32;
+        threshold3Val.innerText = 34;
+        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
+        updateHVBattUI();
+        sendHVBattConfig();
+        showNotification('Настройки ВВБ сброшены до заводских');
+    });
+    
+    btnHeatingOn.addEventListener('click', () => {
+        heatingEnabled = true;
+        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
+        updateHVBattUI();
+        sendHVBattConfig();
+        showNotification('Подогрев батареи включен');
+    });
+    
+    btnHeatingOff.addEventListener('click', () => {
+        heatingEnabled = false;
+        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
+        updateHVBattUI();
+        sendHVBattConfig();
+        showNotification('Подогрев батареи выключен');
+    });
+    
     btnClearHistory.addEventListener('click', () => { historyCoords = []; const list = document.getElementById('historyList'); if (list) list.innerHTML = '<div class="history-item">Нет данных</div>'; });
     settingsBtn.addEventListener('click', showConfig);
     imageBtn.addEventListener('click', () => imageModal.style.display = 'flex');
