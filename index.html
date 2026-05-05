@@ -17,21 +17,23 @@
         .car-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 25px; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; transition: all 0.3s; }
         .car-icon img { width: 100%; height: 100%; object-fit: cover; }
         .settings-btn, .image-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: white; opacity: 0.7; margin-left: 10px; }
-        .mqtt-form { background: rgba(0,0,0,0.7); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+        .mqtt-form { background: rgba(0,0,0,0.7); padding: 20px; border-radius: 20px; margin-bottom: 20px; display: none; }
         .mqtt-form h3 { margin-bottom: 15px; }
         .mqtt-form input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; font-size: 16px; }
         .mqtt-form button { background: #0083b0; border: none; padding: 12px; border-radius: 30px; color: white; font-size: 18px; margin-top: 10px; width: 100%; cursor: pointer; }
-        .engine-main-btn { width: 100%; padding: 25px; font-size: 28px; font-weight: bold; border: none; border-radius: 40px; margin-bottom: 20px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .engine-main-btn { width: 100%; padding: 25px; font-size: 28px; font-weight: bold; border: none; border-radius: 40px; margin-bottom: 20px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: all 0.2s ease; }
+        .engine-main-btn:active { transform: scale(0.97); }
         .engine-main-btn.start { background: linear-gradient(135deg, #00b4db, #0083b0); color: white; }
         .engine-main-btn.stop { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: white; }
         .info-panel, .functions-panel, .history-panel { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; margin-bottom: 20px; }
         .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .functions-grid { display: flex; flex-direction: column; gap: 10px; }
-        .func-btn { background: rgba(255,255,255,0.15); border: none; padding: 12px; border-radius: 30px; color: white; font-size: 16px; text-align: center; cursor: pointer; }
-        .expandable-panel { display: none; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 15px; flex-wrap: wrap; gap: 10px; align-items: center; }
-        .expandable-panel.active { display: flex; flex-direction: column; align-items: stretch; }
+        .func-btn { background: rgba(255,255,255,0.15); border: none; padding: 12px; border-radius: 30px; color: white; font-size: 16px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
+        .func-btn:active { transform: scale(0.97); background: rgba(255,255,255,0.25); }
+        .expandable-panel { display: none; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 15px; flex-wrap: wrap; gap: 10px; align-items: center; flex-direction: column; align-items: stretch; }
+        .expandable-panel.active { display: flex; }
         .time-select, .datetime-input { background: rgba(255,255,255,0.2); border: none; padding: 10px; border-radius: 20px; color: white; flex: 1; }
-        .action-btn { background: #0083b0; border: none; padding: 10px 15px; border-radius: 20px; color: white; cursor: pointer; }
+        .action-btn { background: #0083b0; border: none; padding: 10px 15px; border-radius: 20px; color: white; cursor: pointer; margin-top: 5px; }
         .cancel-btn { background: #ff4b2b; }
         .history-list { max-height: 150px; overflow-y: auto; font-size: 12px; font-family: monospace; }
         .history-item { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -42,7 +44,6 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { position: relative; background: #1a1a2e; border-radius: 30px; padding: 20px; width: 80%; max-width: 300px; text-align: center; }
         .close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; background: none; border: none; color: white; }
-        .modal-title { margin-top: 10px; margin-bottom: 15px; }
         .flex-btns { display: flex; gap: 10px; }
         .schedule-item { background: rgba(0,0,0,0.5); border-radius: 15px; padding: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .schedule-time { font-family: monospace; }
@@ -51,8 +52,6 @@
         .range-input { width: 100%; margin: 5px 0; }
         .range-labels { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.7; }
         .disabled-btn { opacity: 0.5; pointer-events: none; }
-        
-        /* НОВОЕ: Стили для панели ВВБ */
         .hvbatt-panel { background: rgba(0,0,0,0.3); border-radius: 15px; padding: 10px; margin-top: 10px; }
         .hvbatt-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .temp-good { color: #4ade80; }
@@ -78,7 +77,7 @@
         </div>
     </div>
 
-    <div id="mqttConfigPanel" class="mqtt-form" style="display: none;">
+    <div id="mqttConfigPanel" class="mqtt-form">
         <h3>Настройки MQTT</h3>
         <input type="text" id="mqttHost" placeholder="Адрес сервера" value="m2.wqtt.ru">
         <input type="text" id="mqttPort" placeholder="Порт" value="19608">
@@ -98,7 +97,6 @@
             <div class="info-row"><span class="info-label">📍 Координаты</span><span class="info-value" id="coords">—</span></div>
             <div class="info-row"><span class="info-label">📡 Скорость</span><span class="info-value" id="speed">— км/ч</span></div>
             <div class="info-row"><span class="info-label">🔒 Охрана</span><span class="info-value" id="securityStatus">—</span></div>
-            <!-- НОВОЕ: строка температуры ВВБ в основной панели -->
             <div class="info-row"><span class="info-label">🔋 Температура ВВБ</span><span class="info-value" id="hvbattTempMain">— °C</span></div>
         </div>
 
@@ -109,17 +107,20 @@
                 <button class="func-btn" id="btnScheduleToggle">⏰ ЗАПУСК ПО ВРЕМЕНИ</button>
                 <button class="func-btn" id="btnWarmupToggle">🌡️ ПРОГРЕВ</button>
                 <button class="func-btn" id="btnAutoTempToggle">❄️ АВТОЗАПУСК ПО ТЕМПЕРАТУРЕ</button>
-                <!-- НОВОЕ: кнопка управления ВВБ -->
                 <button class="func-btn" id="btnHVBattToggle">🔋 УПРАВЛЕНИЕ ВВБ</button>
             </div>
+            
             <div id="warmupPanel" class="expandable-panel">
                 <select id="warmupTime" class="time-select">
-                    <option value="5">5 минут</option><option value="10" selected>10 минут</option>
-                    <option value="15">15 минут</option><option value="20">20 минут</option>
+                    <option value="5">5 минут</option>
+                    <option value="10" selected>10 минут</option>
+                    <option value="15">15 минут</option>
+                    <option value="20">20 минут</option>
                     <option value="25">25 минут</option>
                 </select>
                 <button class="action-btn" id="btnStartWarmup">Запустить прогрев</button>
             </div>
+            
             <div id="autoTempPanel" class="expandable-panel">
                 <div>
                     <label>❄️ Температура запуска: <span id="tempThresholdValue">-25</span>°C</label>
@@ -138,7 +139,6 @@
                 <div id="autoTempStatus" class="auto-temp-status">⚪ Автозапуск выключен</div>
             </div>
             
-            <!-- НОВОЕ: Панель управления ВВБ -->
             <div id="hvbattPanel" class="expandable-panel">
                 <div class="hvbatt-panel">
                     <div class="hvbatt-row">
@@ -205,24 +205,31 @@
     </div>
 </div>
 
-<div id="imageModal" class="modal"><div class="modal-content"><h3>Загрузить фото</h3><input type="file" id="imageUpload" accept="image/png, image/jpeg"><button id="saveImageBtn">Сохранить</button><button id="closeModal">Закрыть</button></div></div>
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <h3>Загрузить фото</h3>
+        <input type="file" id="imageUpload" accept="image/png, image/jpeg">
+        <button id="saveImageBtn">Сохранить</button>
+        <button id="closeModalBtnImage">Закрыть</button>
+    </div>
+</div>
 
 <script src="https://unpkg.com/mqtt@5.0.0/dist/mqtt.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="sw-register.js"></script>
 <script>
+    // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
     function addButtonAnimation(btn) {
         if (!btn) return;
-        btn.addEventListener('touchstart', function() { this.style.transform = 'scale(0.97)'; this.style.transition = 'transform 0.08s ease'; }, { passive: true });
-        btn.addEventListener('touchend', function() { this.style.transform = 'scale(1)'; });
-        btn.addEventListener('touchcancel', function() { this.style.transform = 'scale(1)'; });
-        btn.addEventListener('mousedown', function() { this.style.transform = 'scale(0.97)'; });
-        btn.addEventListener('mouseup', function() { this.style.transform = 'scale(1)'; });
-        btn.addEventListener('mouseleave', function() { this.style.transform = 'scale(1)'; });
+        btn.addEventListener('touchstart', () => { btn.style.transform = 'scale(0.97)'; }, { passive: true });
+        btn.addEventListener('touchend', () => { btn.style.transform = 'scale(1)'; });
+        btn.addEventListener('mousedown', () => { btn.style.transform = 'scale(0.97)'; });
+        btn.addEventListener('mouseup', () => { btn.style.transform = 'scale(1)'; });
+        btn.addEventListener('mouseleave', () => { btn.style.transform = 'scale(1)'; });
     }
-    document.querySelectorAll('button').forEach(btn => addButtonAnimation(btn));
 
+    // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
     let client = null;
     let map = null, marker = null;
     let historyCoords = [];
@@ -243,17 +250,16 @@
     let autoTempThreshold = -25;
     let autoTempDuration = 20;
 
-    // НОВОЕ: переменные для ВВБ
-    let hvbattEnabled = true;  // контроллер всегда активен
+    let hvbattEnabled = true;
     let hvbattTemp = 0;
     let hvbattFanSpeed = 0;
     let hvbattThreshold1 = 30;
     let hvbattThreshold2 = 32;
     let hvbattThreshold3 = 34;
-    let heatingEnabled = false;  // подогрев батареи
-    let cabinTemp = 20;  // температура салона (получаем с CAN)
+    let heatingEnabled = false;
+    let cabinTemp = 20;
 
-    // DOM элементы для ВВБ (НОВОЕ)
+    // --- DOM ЭЛЕМЕНТЫ ---
     const btnHVBattToggle = document.getElementById('btnHVBattToggle');
     const hvbattPanel = document.getElementById('hvbattPanel');
     const hvbattTempSpan = document.getElementById('hvbattTemp');
@@ -298,21 +304,20 @@
     const btnStartAutoTemp = document.getElementById('btnStartAutoTemp');
     const btnStopAutoTemp = document.getElementById('btnStopAutoTemp');
     const autoTempStatusDiv = document.getElementById('autoTempStatus');
-    const scheduleList = document.getElementById('scheduleList');
-    const scheduleLimitWarning = document.getElementById('scheduleLimitWarning');
+    const scheduleListDiv = document.getElementById('scheduleList');
     const btnClearHistory = document.getElementById('btnClearHistory');
-    const carImage = document.getElementById('carImage');
     const settingsBtn = document.getElementById('settingsBtn');
     const imageBtn = document.getElementById('imageBtn');
     const imageModal = document.getElementById('imageModal');
     const saveImageBtn = document.getElementById('saveImageBtn');
-    const closeModal = document.getElementById('closeModal');
+    const closeModalBtnImage = document.getElementById('closeModalBtnImage');
     const timerDisplay = document.getElementById('timerDisplay');
     const scheduleModal = document.getElementById('scheduleModal');
     const scheduleDateTime = document.getElementById('scheduleDateTime');
     const confirmScheduleBtn = document.getElementById('confirmScheduleBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
+    // --- ТАЙМЕРЫ ---
     function formatTime(seconds) {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
@@ -320,32 +325,15 @@
         return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    function disableAllCommands(disabled) {
-        const btns = [btnCloseWindows, btnArmDisarm, btnWarmupToggle, btnScheduleToggle, btnAutoTempToggle];
-        btns.forEach(btn => {
-            if (disabled) {
-                btn.classList.add('disabled-btn');
-            } else {
-                btn.classList.remove('disabled-btn');
-            }
-        });
-    }
-
     function startMaxEngineTimer() {
         if (maxEngineRunTimer) clearTimeout(maxEngineRunTimer);
         maxEngineRunTimer = setTimeout(() => {
-            if (isReady) {
-                sendCommand('engine/state', 'OFF');
-                showNotification('⚠️ Автоматическое выключение READY (лимит 25 минут)');
-            }
+            if (isReady) sendCommand('engine/state', 'OFF');
         }, MAX_ENGINE_RUN_SECONDS * 1000);
     }
 
     function stopMaxEngineTimer() {
-        if (maxEngineRunTimer) {
-            clearTimeout(maxEngineRunTimer);
-            maxEngineRunTimer = null;
-        }
+        if (maxEngineRunTimer) { clearTimeout(maxEngineRunTimer); maxEngineRunTimer = null; }
     }
 
     function startTimer(isWarmup, warmupMin) {
@@ -355,94 +343,76 @@
         warmupSeconds = warmupMin * 60;
         timerDisplay.style.display = 'block';
         startMaxEngineTimer();
-        
         engineTimer = setInterval(() => {
             if (!isReady) { stopTimer(); return; }
             const elapsed = Math.floor((Date.now() - engineStartTime) / 1000);
             if (isWarmupMode) {
                 const remaining = Math.max(0, warmupSeconds - elapsed);
                 timerDisplay.textContent = `🌡️ ПРОГРЕВ: ${formatTime(remaining)}`;
-                if (remaining <= 0 && isReady) {
-                    sendCommand('engine/state', 'OFF');
-                    stopTimer();
-                    showNotification('Прогрев завершён, READY выключен');
-                }
+                if (remaining <= 0 && isReady) { sendCommand('engine/state', 'OFF'); stopTimer(); }
             } else {
                 timerDisplay.textContent = `⏱️ ВРЕМЯ В РЕЖИМЕ READY: ${formatTime(elapsed)}`;
-                if (elapsed >= MAX_ENGINE_RUN_SECONDS) {
-                    sendCommand('engine/state', 'OFF');
-                    stopTimer();
-                    showNotification('⚠️ Автоматическое выключение READY (лимит 25 минут)');
-                }
+                if (elapsed >= MAX_ENGINE_RUN_SECONDS) { sendCommand('engine/state', 'OFF'); stopTimer(); }
             }
         }, 1000);
     }
 
     function stopTimer() {
-        if (engineTimer) {
-            clearInterval(engineTimer);
-            engineTimer = null;
-        }
+        if (engineTimer) { clearInterval(engineTimer); engineTimer = null; }
         stopMaxEngineTimer();
         timerDisplay.style.display = 'none';
     }
 
+    // --- ПЛАНИРОВЩИК ---
     function updateScheduleList() {
-        scheduleList.innerHTML = '';
+        if (!scheduleListDiv) return;
+        scheduleListDiv.innerHTML = '';
         if (scheduledItems.length === 0) {
-            scheduleList.innerHTML = '<div style="color:#aaa; padding:10px; text-align:center;">Нет запланированных запусков</div>';
+            scheduleListDiv.innerHTML = '<div style="color:#aaa; padding:10px; text-align:center;">Нет запланированных запусков</div>';
             return;
         }
         scheduledItems.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'schedule-item';
             div.innerHTML = `<span class="schedule-time">⏰ ${item.timeStr}</span><button class="schedule-cancel" data-index="${index}">Отменить</button>`;
-            scheduleList.appendChild(div);
+            scheduleListDiv.appendChild(div);
         });
         document.querySelectorAll('.schedule-cancel').forEach(btn => {
-            addButtonAnimation(btn);
             btn.addEventListener('click', (e) => {
                 const idx = parseInt(e.target.getAttribute('data-index'));
                 cancelSchedule(idx);
             });
+            addButtonAnimation(btn);
         });
     }
 
     function cancelSchedule(index) {
-        const item = scheduledItems[index];
-        if (item && item.timer) clearTimeout(item.timer);
+        if (scheduledItems[index] && scheduledItems[index].timer) clearTimeout(scheduledItems[index].timer);
         scheduledItems.splice(index, 1);
-        scheduledTimers.splice(index, 1);
         updateScheduleList();
-        showNotification('Запланированный запуск отменён');
         sendCommand('engine/schedule', 'CANCEL');
     }
 
     function scheduleEngineStart(dt) {
         if (scheduledItems.length >= 3) {
-            if (scheduleLimitWarning) scheduleLimitWarning.style.display = 'block';
-            setTimeout(() => { if (scheduleLimitWarning) scheduleLimitWarning.style.display = 'none'; }, 3000);
+            const warning = document.getElementById('scheduleLimitWarning');
+            if (warning) warning.style.display = 'block';
+            setTimeout(() => { if (warning) warning.style.display = 'none'; }, 3000);
             return false;
         }
         const delay = dt.getTime() - Date.now();
         if (delay <= 0) { alert('Выберите время в будущем'); return false; }
         const timer = setTimeout(() => {
-            if (!isReady) {
-                sendCommand('engine/state', 'ON');
-                showNotification(`Запуск выполнен в ${dt.toLocaleString()}`);
-            } else {
-                showNotification(`⚠️ Запуск не выполнен: READY уже активен`);
-            }
+            if (!isReady) sendCommand('engine/state', 'ON');
             const idx = scheduledItems.findIndex(i => i.time.getTime() === dt.getTime());
             if (idx !== -1) { scheduledItems.splice(idx, 1); scheduledTimers.splice(idx, 1); updateScheduleList(); }
         }, delay);
-        scheduledTimers.push(timer);
         scheduledItems.push({ time: dt, timeStr: dt.toLocaleString(), timer: timer });
         updateScheduleList();
-        showNotification(`Запуск запланирован на ${dt.toLocaleString()}`);
         return true;
     }
 
+    // --- КАРТА ---
     function initMap() {
         const mapContainer = document.getElementById('map-container');
         if (!mapContainer) return;
@@ -465,37 +435,45 @@
         if (historyCoords.length === 0 && historyList) historyList.innerHTML = '<div class="history-item">Нет данных</div>';
     }
 
-    function showNotification(msg) { if ('Notification' in window && Notification.permission === 'granted') new Notification('Lexus Control', { body: msg, icon: 'icon-lexus.png' }); }
-    
+    // --- ОТПРАВКА КОМАНД ---
+    function sendCommand(topic, command, payload = null) {
+        if (!client || !client.connected) { alert('Нет подключения к MQTT'); return false; }
+        const fullTopic = currentPrefix ? `${currentPrefix}/${topic}` : topic;
+        client.publish(fullTopic, payload || command, { qos: 1, retain: false });
+        console.log(`📤 ${fullTopic} = ${payload || command}`);
+        return true;
+    }
+
+    function sendAutoTempConfig() {
+        if (!client || !client.connected) return;
+        const config = JSON.stringify({ enabled: autoTempEnabled, threshold: autoTempThreshold, duration: autoTempDuration });
+        client.publish(`${currentPrefix}/autotemp/config`, config, { qos: 1 });
+    }
+
+    function sendHVBattConfig() {
+        if (!client || !client.connected) return;
+        const config = JSON.stringify({ enabled: hvbattEnabled, temp1: hvbattThreshold1, temp2: hvbattThreshold2, temp3: hvbattThreshold3, heatingEnabled: heatingEnabled });
+        client.publish(`${currentPrefix}/hvbatt/config`, config, { qos: 1 });
+    }
+
+    // --- UI ОБНОВЛЕНИЯ ---
     function updateMainButton(ready) {
         isReady = ready;
-        const currentSpeed = parseFloat(document.getElementById('speed').innerText) || 0;
-        const highSpeed = currentSpeed > 5;
-        
+        const speed = parseFloat(document.getElementById('speed').innerText) || 0;
+        const highSpeed = speed > 5;
         if (ready) {
             mainEngineBtn.textContent = '🛑 ВЫКЛЮЧИТЬ READY';
-            mainEngineBtn.classList.remove('start');
-            mainEngineBtn.classList.add('stop');
-            if (highSpeed) {
-                mainEngineBtn.disabled = true;
-                mainEngineBtn.style.opacity = '0.5';
-                disableAllCommands(true);
-            } else {
-                mainEngineBtn.disabled = false;
-                mainEngineBtn.style.opacity = '1';
-                disableAllCommands(false);
-            }
+            mainEngineBtn.classList.remove('start'); mainEngineBtn.classList.add('stop');
+            mainEngineBtn.disabled = highSpeed;
+            mainEngineBtn.style.opacity = highSpeed ? '0.5' : '1';
         } else {
             mainEngineBtn.textContent = '🔥 ВКЛЮЧИТЬ READY';
-            mainEngineBtn.classList.remove('stop');
-            mainEngineBtn.classList.add('start');
-            mainEngineBtn.disabled = false;
-            mainEngineBtn.style.opacity = '1';
-            disableAllCommands(false);
+            mainEngineBtn.classList.remove('stop'); mainEngineBtn.classList.add('start');
+            mainEngineBtn.disabled = false; mainEngineBtn.style.opacity = '1';
             stopTimer();
         }
     }
-    
+
     function updateArmButton(armed) {
         isArmed = armed;
         btnArmDisarm.textContent = armed ? '🔓 СНЯТЬ С ОХРАНЫ' : '🔒 ПОСТАВИТЬ НА ОХРАНУ';
@@ -503,151 +481,56 @@
     }
 
     function updateAutoTempUI() {
-        if (autoTempEnabled) {
-            autoTempStatusDiv.innerHTML = `✅ Автозапуск ВКЛЮЧЕН<br>❄️ Порог: ${autoTempThreshold}°C<br>⏱️ Прогрев: ${autoTempDuration} мин`;
-            autoTempStatusDiv.style.color = '#4ade80';
-        } else {
-            autoTempStatusDiv.innerHTML = '⚪ Автозапуск выключен';
-            autoTempStatusDiv.style.color = '#aaa';
-        }
+        autoTempStatusDiv.innerHTML = autoTempEnabled ? `✅ Автозапуск ВКЛЮЧЕН<br>❄️ Порог: ${autoTempThreshold}°C<br>⏱️ Прогрев: ${autoTempDuration} мин` : '⚪ Автозапуск выключен';
+        autoTempStatusDiv.style.color = autoTempEnabled ? '#4ade80' : '#aaa';
         sendAutoTempConfig();
     }
 
-    function sendAutoTempConfig() {
-        if (client && client.connected) {
-            const config = JSON.stringify({ enabled: autoTempEnabled, threshold: autoTempThreshold, duration: autoTempDuration });
-            client.publish(`${currentPrefix}/autotemp/config`, config, { qos: 1, retain: false });
-        }
+    function calculateFanSpeed(temp, heatingActive) {
+        if (heatingActive && hvbattTemp < 10 && cabinTemp > 10) return 3;
+        if (temp >= hvbattThreshold3) return 6;
+        if (temp >= hvbattThreshold2) return 5;
+        if (temp >= hvbattThreshold1) return 4;
+        return 0;
     }
 
-    // НОВОЕ: Функция обновления UI ВВБ
     function updateHVBattUI() {
-        // Обновляем отображение температуры с цветовой индикацией
         let tempClass = 'temp-good';
         if (hvbattTemp >= hvbattThreshold3) tempClass = 'temp-danger';
         else if (hvbattTemp >= hvbattThreshold2) tempClass = 'temp-warning';
         else if (hvbattTemp >= hvbattThreshold1) tempClass = 'temp-warning';
+        hvbattTempSpan.innerHTML = `${hvbattTemp}°C`; hvbattTempSpan.className = tempClass;
+        if (hvbattTempMain) { hvbattTempMain.innerHTML = `${hvbattTemp}°C`; hvbattTempMain.className = tempClass; }
         
-        hvbattTempSpan.innerHTML = `${hvbattTemp}°C`;
-        hvbattTempSpan.className = tempClass;
-        
-        if (hvbattTempMain) {
-            hvbattTempMain.innerHTML = `${hvbattTemp}°C`;
-            hvbattTempMain.className = tempClass;
-        }
-        
-        // Отображение скорости вентилятора с цветом
         let fanClass = 'fan-speed-0';
-        if (hvbattFanSpeed === 1) fanClass = 'fan-speed-1';
-        else if (hvbattFanSpeed === 2) fanClass = 'fan-speed-2';
-        else if (hvbattFanSpeed === 3) fanClass = 'fan-speed-3';
-        else if (hvbattFanSpeed === 4) fanClass = 'fan-speed-4';
-        else if (hvbattFanSpeed === 5) fanClass = 'fan-speed-5';
-        else if (hvbattFanSpeed === 6) fanClass = 'fan-speed-6';
-        
         let fanText = 'Выключен';
-        if (hvbattFanSpeed === 1) fanText = '1 скорость (мин)';
-        else if (hvbattFanSpeed === 2) fanText = '2 скорость';
-        else if (hvbattFanSpeed === 3) fanText = '3 скорость (подогрев)';
-        else if (hvbattFanSpeed === 4) fanText = '4 скорость';
-        else if (hvbattFanSpeed === 5) fanText = '5 скорость';
-        else if (hvbattFanSpeed === 6) fanText = '6 скорость (макс)';
+        if (hvbattFanSpeed === 1) { fanClass = 'fan-speed-1'; fanText = '1 скорость (мин)'; }
+        else if (hvbattFanSpeed === 2) { fanClass = 'fan-speed-2'; fanText = '2 скорость'; }
+        else if (hvbattFanSpeed === 3) { fanClass = 'fan-speed-3'; fanText = '3 скорость (подогрев)'; }
+        else if (hvbattFanSpeed === 4) { fanClass = 'fan-speed-4'; fanText = '4 скорость'; }
+        else if (hvbattFanSpeed === 5) { fanClass = 'fan-speed-5'; fanText = '5 скорость'; }
+        else if (hvbattFanSpeed === 6) { fanClass = 'fan-speed-6'; fanText = '6 скорость (макс)'; }
+        hvbattFanSpeedSpan.innerHTML = fanText; hvbattFanSpeedSpan.className = fanClass;
         
-        hvbattFanSpeedSpan.innerHTML = fanText;
-        hvbattFanSpeedSpan.className = fanClass;
+        if (heatingEnabled && hvbattTemp < 10 && cabinTemp > 10) hvbattModeSpan.innerHTML = 'Подогрев батареи';
+        else if (hvbattTemp >= hvbattThreshold1) hvbattModeSpan.innerHTML = 'Охлаждение активно';
+        else hvbattModeSpan.innerHTML = 'Автономный (ожидание)';
         
-        // Отображение режима
-        if (heatingEnabled && hvbattTemp < 10 && cabinTemp > 10) {
-            hvbattModeSpan.innerHTML = 'Подогрев батареи';
-            hvbattModeSpan.style.color = '#f97316';
-        } else if (hvbattTemp >= hvbattThreshold1) {
-            hvbattModeSpan.innerHTML = 'Охлаждение активно';
-            hvbattModeSpan.style.color = '#3b82f6';
-        } else {
-            hvbattModeSpan.innerHTML = 'Автономный (ожидание)';
-            hvbattModeSpan.style.color = '#6b7280';
-        }
-        
-        // Отображение статуса подогрева
-        if (heatingEnabled) {
-            heatingStatusSpan.innerHTML = '✅ Подогрев ВКЛЮЧЕН (при t<10°C и t салона>10°C)';
-            heatingStatusSpan.style.color = '#4ade80';
-        } else {
-            heatingStatusSpan.innerHTML = '⚪ Подогрев выключен';
-            heatingStatusSpan.style.color = '#aaa';
-        }
-        
-        // Отправляем конфигурацию на сервер
+        heatingStatusSpan.innerHTML = heatingEnabled ? '✅ Подогрев ВКЛЮЧЕН' : '⚪ Подогрев выключен';
+        heatingStatusSpan.style.color = heatingEnabled ? '#4ade80' : '#aaa';
         sendHVBattConfig();
     }
-    
-    // НОВОЕ: Отправка конфигурации ВВБ на сервер
-    function sendHVBattConfig() {
-        if (client && client.connected) {
-            const config = JSON.stringify({
-                enabled: hvbattEnabled,
-                threshold1: hvbattThreshold1,
-                threshold2: hvbattThreshold2,
-                threshold3: hvbattThreshold3,
-                heatingEnabled: heatingEnabled
-            });
-            client.publish(`${currentPrefix}/hvbatt/config`, config, { qos: 1, retain: false });
-            console.log('📤 HVBatt config sent:', config);
-        }
-    }
-    
-    // НОВОЕ: Функция расчета скорости вентилятора (эмуляция работы контроллера)
-    function calculateFanSpeed(temp, heatingActive) {
-        // Приоритет: подогрев важнее охлаждения
-        if (heatingActive && hvbattTemp < 10 && cabinTemp > 10) {
-            return 3;  // 3 скорость для подогрева
-        }
-        
-        // Охлаждение по порогам
-        if (temp >= hvbattThreshold3) return 6;
-        if (temp >= hvbattThreshold2) return 5;
-        if (temp >= hvbattThreshold1) return 4;
-        
-        return 0;
-    }
 
-    function sendCommand(topic, command) {
-        const currentSpeed = parseFloat(document.getElementById('speed').innerText) || 0;
-        if (currentSpeed > 5 && (command === 'ON' || command === 'OFF')) {
-            alert('Невозможно отправить команду: автомобиль движется (скорость > 5 км/ч)');
-            return false;
-        }
-        if (client && client.connected) {
-            const fullTopic = currentPrefix ? `${currentPrefix}/${topic}` : topic;
-            client.publish(fullTopic, command, { qos: 1, retain: false });
-            console.log(`📤 ${fullTopic} = ${command}`);
-            return true;
-        } else { alert('Нет подключения к MQTT'); return false; }
-    }
-
+    // --- MQTT ПОДКЛЮЧЕНИЕ ---
     function connectMQTT(host, port, user, pass, prefix) {
         currentPrefix = prefix;
         const wsUrl = `wss://${host}:${port}/mqtt`;
         const options = { username: user, password: pass, clientId: "pwa_" + Math.random().toString(36).substring(7), clean: true, reconnectPeriod: 5000, connectTimeout: 30000 };
         client = mqtt.connect(wsUrl, options);
+        
         client.on('connect', () => {
-            connStatusDiv.textContent = '✅ Подключено к MQTT';
-            connStatusDiv.style.color = '#4ade80';
-            // ИЗМЕНЕНО: добавлены топики ВВБ
-            const topics = [
-                `${prefix}/gps/latitude`, 
-                `${prefix}/gps/longitude`, 
-                `${prefix}/gps/speed`, 
-                `${prefix}/ready/status`, 
-                `${prefix}/engine/temp`, 
-                `${prefix}/security/status`, 
-                `${prefix}/autotemp/status`,
-                `${prefix}/hvbatt/temperature`,     // НОВОЕ
-                `${prefix}/hvbatt/fan_speed`,       // НОВОЕ
-                `${prefix}/hvbatt/config`,          // НОВОЕ
-                `${prefix}/cabin/temperature`       // НОВОЕ (температура салона)
-            ];
-            client.subscribe(topics);
+            connStatusDiv.textContent = '✅ Подключено к MQTT'; connStatusDiv.style.color = '#4ade80';
+            client.subscribe([`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/ready/status`, `${prefix}/engine/temp`, `${prefix}/security/status`, `${prefix}/autotemp/status`, `${prefix}/hvbatt/temperature`, `${prefix}/hvbatt/fan_speed`, `${prefix}/cabin/temperature`]);
         });
         client.on('message', (topic, message) => {
             const payload = message.toString();
@@ -655,91 +538,25 @@
             switch(shortTopic) {
                 case 'gps/latitude': lastLat = parseFloat(payload); document.getElementById('coords').innerHTML = (lastLat?.toFixed(6) || '—') + ' / ' + (lastLon?.toFixed(6) || '—'); break;
                 case 'gps/longitude': lastLon = parseFloat(payload); document.getElementById('coords').innerHTML = (lastLat?.toFixed(6) || '—') + ' / ' + lastLon.toFixed(6); addToHistory(lastLat, lastLon); updateMapPosition(lastLat, lastLon); break;
-                case 'gps/speed': 
-                    const speed = parseFloat(payload);
-                    document.getElementById('speed').innerHTML = speed.toFixed(1) + ' км/ч';
-                    if (isReady && speed > 5) {
-                        mainEngineBtn.disabled = true;
-                        mainEngineBtn.style.opacity = '0.5';
-                        disableAllCommands(true);
-                    } else if (isReady) {
-                        mainEngineBtn.disabled = false;
-                        mainEngineBtn.style.opacity = '1';
-                        disableAllCommands(false);
-                    }
-                    break;
-                case 'ready/status': 
-                    updateMainButton(payload === 'ready');
-                    if (payload === 'ready') {
-                        startTimer(false, 0);
-                    } else {
-                        stopTimer();
-                    }
-                    break;
+                case 'gps/speed': document.getElementById('speed').innerHTML = parseFloat(payload).toFixed(1) + ' км/ч'; updateMainButton(isReady); break;
+                case 'ready/status': updateMainButton(payload === 'ready'); if (payload === 'ready') startTimer(false, 0); else stopTimer(); break;
                 case 'engine/temp': document.getElementById('temp').innerHTML = payload + ' °C'; break;
                 case 'security/status': updateArmButton(payload === 'armed'); break;
                 case 'autotemp/status':
-                    try {
-                        const status = JSON.parse(payload);
-                        autoTempEnabled = status.enabled;
-                        autoTempThreshold = status.threshold;
-                        autoTempDuration = status.duration;
-                        tempThreshold.value = autoTempThreshold;
-                        tempThresholdValue.innerText = autoTempThreshold;
-                        warmupDuration.value = autoTempDuration;
-                        warmupDurationValue.innerText = autoTempDuration;
-                        updateAutoTempUI();
-                    } catch(e) {}
+                    try { const status = JSON.parse(payload); autoTempEnabled = status.enabled; autoTempThreshold = status.threshold; autoTempDuration = status.duration; tempThreshold.value = autoTempThreshold; tempThresholdValue.innerText = autoTempThreshold; warmupDuration.value = autoTempDuration; warmupDurationValue.innerText = autoTempDuration; updateAutoTempUI(); } catch(e) {}
                     break;
-                // НОВОЕ: обработка топиков ВВБ
-                case 'hvbatt/temperature':
-                    hvbattTemp = parseFloat(payload);
-                    // Автоматически рассчитываем скорость вентилятора
-                    hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
-                    updateHVBattUI();
-                    // Отправляем команду на изменение скорости вентилятора (если нужно)
-                    if (client && client.connected) {
-                        client.publish(`${currentPrefix}/hvbatt/set_fan`, hvbattFanSpeed.toString(), { qos: 1 });
-                    }
-                    break;
-                case 'hvbatt/fan_speed':
-                    hvbattFanSpeed = parseInt(payload);
-                    updateHVBattUI();
-                    break;
-                case 'hvbatt/config':
-                    try {
-                        const config = JSON.parse(payload);
-                        hvbattThreshold1 = config.threshold1 || 30;
-                        hvbattThreshold2 = config.threshold2 || 32;
-                        hvbattThreshold3 = config.threshold3 || 34;
-                        heatingEnabled = config.heatingEnabled || false;
-                        // Обновляем слайдеры
-                        threshold1Slider.value = hvbattThreshold1;
-                        threshold2Slider.value = hvbattThreshold2;
-                        threshold3Slider.value = hvbattThreshold3;
-                        threshold1Val.innerText = hvbattThreshold1;
-                        threshold2Val.innerText = hvbattThreshold2;
-                        threshold3Val.innerText = hvbattThreshold3;
-                        updateHVBattUI();
-                    } catch(e) {}
-                    break;
-                case 'cabin/temperature':
-                    cabinTemp = parseFloat(payload);
-                    // Пересчитываем скорость вентилятора при изменении температуры салона
-                    hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
-                    updateHVBattUI();
-                    break;
+                case 'hvbatt/temperature': hvbattTemp = parseFloat(payload); hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled); updateHVBattUI(); sendCommand('hvbatt/set_fan', hvbattFanSpeed.toString()); break;
+                case 'hvbatt/fan_speed': hvbattFanSpeed = parseInt(payload); updateHVBattUI(); break;
+                case 'cabin/temperature': cabinTemp = parseFloat(payload); hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled); updateHVBattUI(); break;
             }
         });
-        client.on('error', (err) => { console.error('MQTT error:', err); connStatusDiv.textContent = '❌ Ошибка MQTT'; connStatusDiv.style.color = '#f87171'; });
-        client.on('close', () => { console.log('MQTT disconnected'); connStatusDiv.textContent = '⚠️ Отключено, переподключение...'; connStatusDiv.style.color = '#fbbf24'; });
+        client.on('error', () => { connStatusDiv.textContent = '❌ Ошибка MQTT'; connStatusDiv.style.color = '#f87171'; });
+        client.on('close', () => { connStatusDiv.textContent = '⚠️ Отключено, переподключение...'; connStatusDiv.style.color = '#fbbf24'; });
     }
 
-    function showConfig() {
-        mqttConfigPanel.style.display = 'block';
-        mainInterface.style.display = 'none';
-        if (client) { client.end(); client = null; }
-    }
+    // --- НАСТРОЙКИ И ИНИЦИАЛИЗАЦИЯ ---
+    function showConfig() { mqttConfigPanel.style.display = 'block'; mainInterface.style.display = 'none'; if (client) { client.end(); client = null; } }
+    function hideConfig() { mqttConfigPanel.style.display = 'none'; mainInterface.style.display = 'block'; initMap(); }
 
     function loadSettings() {
         const host = localStorage.getItem('mqtt_host');
@@ -749,11 +566,9 @@
             mqttUser.value = localStorage.getItem('mqtt_user') || '';
             mqttPass.value = localStorage.getItem('mqtt_pass') || '';
             mqttPrefix.value = localStorage.getItem('mqtt_prefix') || 'lexus';
-            mqttConfigPanel.style.display = 'none';
-            mainInterface.style.display = 'block';
+            hideConfig();
             connectMQTT(mqttHost.value, mqttPort.value, mqttUser.value, mqttPass.value, mqttPrefix.value);
-            initMap();
-        } else { showConfig(); }
+        } else showConfig();
     }
 
     saveMqttBtn.addEventListener('click', () => {
@@ -765,145 +580,51 @@
         loadSettings();
     });
 
-    // --- Обработчики ---
+    // --- ОБРАБОТЧИКИ КНОПОК ---
     mainEngineBtn.addEventListener('click', () => sendCommand('engine/state', isReady ? 'OFF' : 'ON'));
     btnCloseWindows.addEventListener('click', () => sendCommand('engine/state', 'CLOSE_WINDOWS'));
-    btnArmDisarm.addEventListener('click', () => {
-        sendCommand('engine/state', btnArmDisarm.textContent.includes('ПОСТАВИТЬ') ? 'ARM' : 'DISARM');
+    btnArmDisarm.addEventListener('click', () => sendCommand('engine/state', isArmed ? 'DISARM' : 'ARM'));
+    btnWarmupToggle.addEventListener('click', () => warmupPanel.classList.toggle('active'));
+    btnScheduleToggle.addEventListener('click', () => { const now = new Date(); now.setMinutes(now.getMinutes() + 30); scheduleDateTime.value = now.toISOString().slice(0, 16); scheduleModal.style.display = 'flex'; });
+    btnAutoTempToggle.addEventListener('click', () => autoTempPanel.classList.toggle('active'));
+    btnHVBattToggle.addEventListener('click', () => hvbattPanel.classList.toggle('active'));
+    btnStartWarmup.addEventListener('click', () => { const minutes = parseInt(warmupTime.value); sendCommand('engine/state', `WARMUP_${minutes}`); warmupPanel.classList.remove('active'); });
+    tempThreshold.addEventListener('input', () => { autoTempThreshold = parseInt(tempThreshold.value); tempThresholdValue.innerText = autoTempThreshold; if (autoTempEnabled) { sendAutoTempConfig(); } });
+    warmupDuration.addEventListener('input', () => { autoTempDuration = parseInt(warmupDuration.value); warmupDurationValue.innerText = autoTempDuration; if (autoTempEnabled) { sendAutoTempConfig(); } });
+    btnStartAutoTemp.addEventListener('click', () => { autoTempEnabled = true; updateAutoTempUI(); autoTempPanel.classList.remove('active'); });
+    btnStopAutoTemp.addEventListener('click', () => { autoTempEnabled = false; updateAutoTempUI(); });
+    confirmScheduleBtn.addEventListener('click', () => { const dt = new Date(scheduleDateTime.value); if (!isNaN(dt.getTime())) scheduleEngineStart(dt); scheduleModal.style.display = 'none'; });
+    closeModalBtn.addEventListener('click', () => scheduleModal.style.display = 'none');
+    [threshold1Slider, threshold2Slider, threshold3Slider].forEach((slider, idx) => {
+        if (!slider) return;
+        slider.addEventListener('input', () => {
+            const val = parseInt(slider.value);
+            if (idx === 0) { hvbattThreshold1 = val; threshold1Val.innerText = val; }
+            else if (idx === 1) { hvbattThreshold2 = val; threshold2Val.innerText = val; }
+            else { hvbattThreshold3 = val; threshold3Val.innerText = val; }
+            updateHVBattUI();
+        });
     });
-    btnStartWarmup.addEventListener('click', () => {
-        if (isReady) {
-            showNotification('⚠️ READY уже активен, прогрев не запущен');
-            return;
-        }
-        const minutes = parseInt(warmupTime.value);
-        startTimer(true, minutes);
-        sendCommand('engine/state', `WARMUP_${minutes}`);
-        warmupPanel.classList.remove('active');
-        showNotification(`Запущен прогрев на ${minutes} минут`);
-    });
-    btnScheduleToggle.addEventListener('click', () => { scheduleModal.style.display = 'flex'; });
-    confirmScheduleBtn.addEventListener('click', () => {
-        const dt = new Date(scheduleDateTime.value);
-        if (dt && dt > new Date()) {
-            if (scheduleEngineStart(dt)) {
-                scheduleModal.style.display = 'none';
-                scheduleDateTime.value = '';
-            }
-        } else {
-            alert('Выберите дату и время в будущем');
-        }
-    });
-    btnAutoTempToggle.addEventListener('click', () => { autoTempPanel.classList.toggle('active'); warmupPanel.classList.remove('active'); });
-    btnWarmupToggle.addEventListener('click', () => { warmupPanel.classList.toggle('active'); autoTempPanel.classList.remove('active'); });
-    
-    // НОВОЕ: обработчик кнопки ВВБ
-    btnHVBattToggle.addEventListener('click', () => { 
-        hvbattPanel.classList.toggle('active'); 
-        autoTempPanel.classList.remove('active');
-        warmupPanel.classList.remove('active');
-    });
-    
-    btnStartAutoTemp.addEventListener('click', () => {
-        if (isReady) {
-            showNotification('⚠️ Невозможно включить автозапуск: READY уже активен');
-            return;
-        }
-        autoTempEnabled = true;
-        autoTempThreshold = parseInt(tempThreshold.value);
-        autoTempDuration = parseInt(warmupDuration.value);
-        updateAutoTempUI();
-        showNotification(`Автозапуск по температуре включён. Порог: ${autoTempThreshold}°C, прогрев: ${autoTempDuration} мин`);
-    });
-    btnStopAutoTemp.addEventListener('click', () => {
-        autoTempEnabled = false;
-        updateAutoTempUI();
-        showNotification('Автозапуск по температуре выключен');
-    });
-    tempThreshold.addEventListener('input', () => {
-        tempThresholdValue.innerText = tempThreshold.value;
-        autoTempThreshold = parseInt(tempThreshold.value);
-        if (autoTempEnabled) updateAutoTempUI();
-    });
-    warmupDuration.addEventListener('input', () => {
-        warmupDurationValue.innerText = warmupDuration.value;
-        autoTempDuration = parseInt(warmupDuration.value);
-        if (autoTempEnabled) updateAutoTempUI();
-    });
-    
-    // НОВОЕ: обработчики для ВВБ
-    threshold1Slider.addEventListener('input', () => {
-        threshold1Val.innerText = threshold1Slider.value;
-        hvbattThreshold1 = parseInt(threshold1Slider.value);
-        // Пересчитываем скорость вентилятора
-        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
-        updateHVBattUI();
-    });
-    threshold2Slider.addEventListener('input', () => {
-        threshold2Val.innerText = threshold2Slider.value;
-        hvbattThreshold2 = parseInt(threshold2Slider.value);
-        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
-        updateHVBattUI();
-    });
-    threshold3Slider.addEventListener('input', () => {
-        threshold3Val.innerText = threshold3Slider.value;
-        hvbattThreshold3 = parseInt(threshold3Slider.value);
-        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
-        updateHVBattUI();
-    });
-    
-    btnHVBattApply.addEventListener('click', () => {
-        sendHVBattConfig();
-        showNotification('Настройки ВВБ сохранены');
-    });
-    
-    btnHVBattReset.addEventListener('click', () => {
-        hvbattThreshold1 = 30;
-        hvbattThreshold2 = 32;
-        hvbattThreshold3 = 34;
-        heatingEnabled = false;
-        threshold1Slider.value = 30;
-        threshold2Slider.value = 32;
-        threshold3Slider.value = 34;
-        threshold1Val.innerText = 30;
-        threshold2Val.innerText = 32;
-        threshold3Val.innerText = 34;
-        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
-        updateHVBattUI();
-        sendHVBattConfig();
-        showNotification('Настройки ВВБ сброшены до заводских');
-    });
-    
-    btnHeatingOn.addEventListener('click', () => {
-        heatingEnabled = true;
-        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
-        updateHVBattUI();
-        sendHVBattConfig();
-        showNotification('Подогрев батареи включен');
-    });
-    
-    btnHeatingOff.addEventListener('click', () => {
-        heatingEnabled = false;
-        hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled);
-        updateHVBattUI();
-        sendHVBattConfig();
-        showNotification('Подогрев батареи выключен');
-    });
-    
-    btnClearHistory.addEventListener('click', () => { historyCoords = []; const list = document.getElementById('historyList'); if (list) list.innerHTML = '<div class="history-item">Нет данных</div>'; });
+    btnHVBattApply.addEventListener('click', () => { sendHVBattConfig(); alert('Настройки ВВБ отправлены'); });
+    btnHVBattReset.addEventListener('click', () => { hvbattThreshold1 = 30; hvbattThreshold2 = 32; hvbattThreshold3 = 34; threshold1Slider.value = 30; threshold2Slider.value = 32; threshold3Slider.value = 34; threshold1Val.innerText = 30; threshold2Val.innerText = 32; threshold3Val.innerText = 34; heatingEnabled = false; updateHVBattUI(); sendHVBattConfig(); alert('Настройки ВВБ сброшены'); });
+    btnHeatingOn.addEventListener('click', () => { heatingEnabled = true; updateHVBattUI(); });
+    btnHeatingOff.addEventListener('click', () => { heatingEnabled = false; updateHVBattUI(); });
+    btnClearHistory.addEventListener('click', () => { historyCoords = []; const historyDiv = document.getElementById('historyList'); if (historyDiv) historyDiv.innerHTML = '<div class="history-item">Нет данных</div>'; });
     settingsBtn.addEventListener('click', showConfig);
     imageBtn.addEventListener('click', () => imageModal.style.display = 'flex');
-    closeModal.addEventListener('click', () => imageModal.style.display = 'none');
-    saveImageBtn.addEventListener('click', () => { if (imageUpload.files[0]) { const reader = new FileReader(); reader.onload = (e) => { carImage.src = e.target.result; localStorage.setItem('carImage', e.target.result); }; reader.readAsDataURL(imageUpload.files[0]); } imageModal.style.display = 'none'; });
-    if (closeModalBtn) closeModalBtn.addEventListener('click', () => { scheduleModal.style.display = 'none'; });
-    window.addEventListener('click', (event) => { if (event.target === scheduleModal) scheduleModal.style.display = 'none'; });
-    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && scheduleModal.style.display === 'flex') scheduleModal.style.display = 'none'; });
+    saveImageBtn.addEventListener('click', () => { const file = document.getElementById('imageUpload').files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { localStorage.setItem('carImage', e.target.result); document.getElementById('carImage').src = e.target.result; }; reader.readAsDataURL(file); imageModal.style.display = 'none'; } });
+    closeModalBtnImage.addEventListener('click', () => imageModal.style.display = 'none');
+    window.addEventListener('click', (e) => { if (e.target === imageModal) imageModal.style.display = 'none'; if (e.target === scheduleModal) scheduleModal.style.display = 'none'; });
 
+    // Загрузка сохранённого фото
     const savedImage = localStorage.getItem('carImage');
-    if (savedImage) carImage.src = savedImage;
-    if ('Notification' in window && Notification.permission !== 'granted') Notification.requestPermission();
+    if (savedImage) document.getElementById('carImage').src = savedImage;
 
-    window.onload = loadSettings;
+    // Анимация кнопок
+    document.querySelectorAll('button').forEach(btn => addButtonAnimation(btn));
+
+    // Старт
+    loadSettings();
 </script>
 </body>
 </html>
