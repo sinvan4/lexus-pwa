@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lexus-pwa-v1';
+const CACHE_NAME = 'lexus-pwa-v2';
 const urlsToCache = [
     '/lexus-pwa/',
     '/lexus-pwa/index.html',
