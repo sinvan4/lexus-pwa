@@ -242,6 +242,9 @@
         showNotification._timer = setTimeout(() => toast.classList.remove('show'), 4500);
     }
 
+    const APP_VERSION = "2026-05-08-v5";
+    console.log("Lexus PWA", APP_VERSION);
+
     // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
     let client = null;
     let map = null, marker = null;
@@ -459,14 +462,14 @@
 
     function sendAutoTempConfig() {
         if (!client || !client.connected) return;
-        const config = JSON.stringify({ enabled: autoTempEnabled, threshold: autoTempThreshold, duration: autoTempDuration });
-        client.publish(`${currentPrefix}/autotemp/config`, config, { qos: 1 });
+        const config = JSON.stringify({ enabled: autoTempEnabled, threshold: autoTempThreshold, duration: autoTempDuration, source: "lexus-pwa", manual: true, ts: Date.now() });
+        client.publish(`${currentPrefix}/autotemp/config`, config, { qos: 1, retain: false });
     }
 
     function sendHVBattConfig() {
         if (!client || !client.connected) return;
-        const config = JSON.stringify({ enabled: hvbattEnabled, temp1: hvbattThreshold1, temp2: hvbattThreshold2, temp3: hvbattThreshold3, heatingEnabled: heatingEnabled });
-        client.publish(`${currentPrefix}/hvbatt/config`, config, { qos: 1 });
+        const config = JSON.stringify({ enabled: hvbattEnabled, temp1: hvbattThreshold1, temp2: hvbattThreshold2, temp3: hvbattThreshold3, heatingEnabled: heatingEnabled, source: "lexus-pwa", manual: true, ts: Date.now() });
+        client.publish(`${currentPrefix}/hvbatt/config`, config, { qos: 1, retain: false });
     }
 
     // --- UI ОБНОВЛЕНИЯ ---
