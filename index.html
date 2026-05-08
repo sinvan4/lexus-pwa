@@ -64,13 +64,11 @@
         .fan-speed-4 { color: #eab308; }
         .fan-speed-5 { color: #f97316; }
         .fan-speed-6 { color: #ef4444; }
-
-        .notification-toast { position: fixed; left: 20px; right: 20px; bottom: 25px; padding: 14px 16px; background: rgba(0,0,0,0.88); color: white; border-radius: 16px; z-index: 2000; font-size: 15px; line-height: 1.3; box-shadow: 0 8px 24px rgba(0,0,0,0.35); opacity: 0; transform: translateY(20px); pointer-events: none; transition: all 0.25s ease; }
-        .notification-toast.show { opacity: 1; transform: translateY(0); }
+        .toast-notification { position: fixed; left: 16px; right: 16px; bottom: 24px; z-index: 2000; padding: 14px 16px; border-radius: 18px; background: rgba(0,0,0,0.88); color: white; box-shadow: 0 8px 24px rgba(0,0,0,0.35); font-size: 15px; line-height: 1.35; opacity: 0; transform: translateY(20px); pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; }
+        .toast-notification.show { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
-<div id="notificationToast" class="notification-toast"></div>
 <div class="container">
     <div class="header">
         <div class="car-icon" id="carIcon"><img id="carImage" src="car-default.png" alt="Car"></div>
@@ -199,6 +197,8 @@
     </div>
 </div>
 
+<div id="toastNotification" class="toast-notification"></div>
+
 <div id="scheduleModal" class="modal">
     <div class="modal-content">
         <button class="close-modal" id="closeModalBtn">✕</button>
@@ -234,7 +234,7 @@
     }
 
     function showNotification(message) {
-        const toast = document.getElementById('notificationToast');
+        const toast = document.getElementById('toastNotification');
         if (!toast) return;
         toast.textContent = message;
         toast.classList.add('show');
@@ -541,7 +541,7 @@
         
         client.on('connect', () => {
             connStatusDiv.textContent = '✅ Подключено к MQTT'; connStatusDiv.style.color = '#4ade80';
-            client.subscribe([`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/ready/status`, `${prefix}/engine/temp`, `${prefix}/engine/notify`, `${prefix}/security/status`, `${prefix}/autotemp/status`, `${prefix}/hvbatt/temperature`, `${prefix}/hvbatt/fan_speed`, `${prefix}/cabin/temperature`]);
+            client.subscribe([`${prefix}/gps/latitude`, `${prefix}/gps/longitude`, `${prefix}/gps/speed`, `${prefix}/ready/status`, `${prefix}/engine/temp`, `${prefix}/engine/notify`, `${prefix}/security/status`, `${prefix}/autotemp/status`, `${prefix}/hvbatt/status`, `${prefix}/hvbatt/temperature`, `${prefix}/hvbatt/fan_speed`, `${prefix}/cabin/temperature`]);
         });
         client.on('message', (topic, message) => {
             const payload = message.toString();
@@ -555,11 +555,37 @@
                 case 'engine/notify': showNotification(payload); break;
                 case 'security/status': updateArmButton(payload === 'armed'); break;
                 case 'autotemp/status':
-                    try { const status = JSON.parse(payload); autoTempEnabled = status.enabled; autoTempThreshold = status.threshold; autoTempDuration = status.duration; tempThreshold.value = autoTempThreshold; tempThresholdValue.innerText = autoTempThreshold; warmupDuration.value = autoTempDuration; warmupDurationValue.innerText = autoTempDuration; updateAutoTempUI(); } catch(e) {}
+                    try {
+                        const status = JSON.parse(payload);
+                        autoTempEnabled = !!status.enabled;
+                        autoTempThreshold = Number(status.threshold ?? autoTempThreshold);
+                        autoTempDuration = Number(status.duration ?? autoTempDuration);
+                        tempThreshold.value = autoTempThreshold;
+                        tempThresholdValue.innerText = autoTempThreshold;
+                        warmupDuration.value = autoTempDuration;
+                        warmupDurationValue.innerText = autoTempDuration;
+                        updateAutoTempUI();
+                    } catch(e) { console.warn('Bad autotemp/status', e); }
                     break;
-                case 'hvbatt/temperature': hvbattTemp = parseFloat(payload); hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled); updateHVBattUI(); break;
+                case 'hvbatt/status':
+                    try {
+                        const status = JSON.parse(payload);
+                        hvbattEnabled = status.enabled ?? hvbattEnabled;
+                        hvbattThreshold1 = Number(status.temp1 ?? hvbattThreshold1);
+                        hvbattThreshold2 = Number(status.temp2 ?? hvbattThreshold2);
+                        hvbattThreshold3 = Number(status.temp3 ?? hvbattThreshold3);
+                        heatingEnabled = !!(status.heatingEnabled ?? heatingEnabled);
+                        hvbattTemp = Number(status.current_temp ?? hvbattTemp);
+                        hvbattFanSpeed = Number(status.current_fan ?? hvbattFanSpeed);
+                        threshold1Slider.value = hvbattThreshold1; threshold1Val.innerText = hvbattThreshold1;
+                        threshold2Slider.value = hvbattThreshold2; threshold2Val.innerText = hvbattThreshold2;
+                        threshold3Slider.value = hvbattThreshold3; threshold3Val.innerText = hvbattThreshold3;
+                        updateHVBattUI();
+                    } catch(e) { console.warn('Bad hvbatt/status', e); }
+                    break;
+                case 'hvbatt/temperature': hvbattTemp = parseFloat(payload); updateHVBattUI(); break;
                 case 'hvbatt/fan_speed': hvbattFanSpeed = parseInt(payload); updateHVBattUI(); break;
-                case 'cabin/temperature': cabinTemp = parseFloat(payload); hvbattFanSpeed = calculateFanSpeed(hvbattTemp, heatingEnabled); updateHVBattUI(); break;
+                case 'cabin/temperature': cabinTemp = parseFloat(payload); updateHVBattUI(); break;
             }
         });
         client.on('error', () => { connStatusDiv.textContent = '❌ Ошибка MQTT'; connStatusDiv.style.color = '#f87171'; });
@@ -601,8 +627,8 @@
     btnAutoTempToggle.addEventListener('click', () => autoTempPanel.classList.toggle('active'));
     btnHVBattToggle.addEventListener('click', () => hvbattPanel.classList.toggle('active'));
     btnStartWarmup.addEventListener('click', () => { const minutes = parseInt(warmupTime.value); sendCommand('engine/state', `WARMUP_${minutes}`); warmupPanel.classList.remove('active'); });
-    tempThreshold.addEventListener('input', () => { autoTempThreshold = parseInt(tempThreshold.value); tempThresholdValue.innerText = autoTempThreshold; if (autoTempEnabled) { sendAutoTempConfig(); } });
-    warmupDuration.addEventListener('input', () => { autoTempDuration = parseInt(warmupDuration.value); warmupDurationValue.innerText = autoTempDuration; if (autoTempEnabled) { sendAutoTempConfig(); } });
+    tempThreshold.addEventListener('input', () => { autoTempThreshold = parseInt(tempThreshold.value); tempThresholdValue.innerText = autoTempThreshold; updateAutoTempUI(); });
+    warmupDuration.addEventListener('input', () => { autoTempDuration = parseInt(warmupDuration.value); warmupDurationValue.innerText = autoTempDuration; updateAutoTempUI(); });
     btnStartAutoTemp.addEventListener('click', () => { autoTempEnabled = true; updateAutoTempUI(); sendAutoTempConfig(); autoTempPanel.classList.remove('active'); });
     btnStopAutoTemp.addEventListener('click', () => { autoTempEnabled = false; updateAutoTempUI(); sendAutoTempConfig(); });
     confirmScheduleBtn.addEventListener('click', () => { const dt = new Date(scheduleDateTime.value); if (!isNaN(dt.getTime())) scheduleEngineStart(dt); scheduleModal.style.display = 'none'; });
